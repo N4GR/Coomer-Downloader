@@ -5,6 +5,15 @@ class File:
             self,
             file_data: dict
     ):
+        """File object that stores data pertaining to a post file.
+
+        Args:
+            file_data (dict): Dictionary of file data.
+        
+        Attributes:
+            name: Name of the file.
+            url: Direct link of the file.
+        """
         path_data_url = "https://n4.coomer.su/data"
         
         self.name : str = file_data["name"]
@@ -16,6 +25,9 @@ class Post:
             post_data: dict
     ):
         """Post object containing a post from a creator.
+    
+        Args:
+            post_data (dict): Dictionary containing post data retrieved from API.
     
         Attributes:
             id (str): ID of the post, could match username.
@@ -44,6 +56,14 @@ class Post:
             self,
             post_data: dict
     ) -> list[File]:
+        """A function that will get all files contained within a post.
+
+        Args:
+            post_data (dict): Post data retrieved from the API.
+
+        Returns:
+            list[File]: A list of files within a post.
+        """
         attachments : list[dict] = post_data["attachments"]
         files : list[dict] | dict = post_data["file"]
         
@@ -64,6 +84,22 @@ class Creator:
             url: str,
             api: API
     ):
+        """A Creator object that will handle creator function.
+
+        Args:
+            url (str): URL of the creator.
+            api (API): API object to call api function.
+        
+        Attributes:
+            url (str): Parsed URL.
+            api (API): Parsed API object.
+            service (str): Service the creator belongs to.
+            id (str): ID of the creator.
+            name (str): Name of the creator.
+            indexed (str): Date which the creator was indexed.
+            updated (str): Date since the last update.
+            posts (list[Post]): A list of posts from the creator.
+        """
         self.url = url
         self.api = api
         

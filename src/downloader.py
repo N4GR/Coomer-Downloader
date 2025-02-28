@@ -13,6 +13,12 @@ class Downloader:
             creators: list[Creator],
             config: Config.Downloader
     ) -> None:
+        """Downloader object to download files from a creator.
+
+        Args:
+            creators (list[Creator]): A list of creators to download.
+            config (Config.Downloader): Downloader configs from the config.yaml file.
+        """
         self.creators = creators
         self.config = config
         
@@ -23,6 +29,11 @@ class Downloader:
             self,
             creator: Creator
     ) -> None:
+        """A function that creates the downloader threads for a creator.
+
+        Args:
+            creator (Creator): Creator object to download.
+        """
         # Create a pool to execute concurrent threads.
         with ThreadPoolExecutor(max_workers = self.config.max_workers) as executor:
             for post in creator.posts:
@@ -35,6 +46,12 @@ class Downloader:
         post: Post,
         creator: Creator
     ):
+        """A function to download the post of a creator.
+
+        Args:
+            post (Post): Post object of the creator's post.
+            creator (Creator): Creator object of the creator.
+        """
         post_date = datetime.strptime(post.published, "%Y-%m-%dT%H:%M:%S")
         post_month_name = post_date.strftime("%B")
         post_year = post_date.strftime("%Y")
@@ -51,8 +68,18 @@ class Downloader:
             url: str,
             path: str
     ) -> None:
+        """A function to download a file within a creator's post.
+
+        Args:
+            url (str): Direct URL of the file.
+            path (str): Path of the file.
+        """
         def file_exists() -> bool:
-            # Check if file already exists or not.
+            """A function to check whether the path to the file already exists.
+
+            Returns:
+                bool: True | False, whether it does it not.
+            """
             if os.path.exists(path):
                 return True
             
@@ -60,6 +87,7 @@ class Downloader:
                 return False
         
         def create_path() -> None:
+            """A function to create the paths to the file if it doesn't exist already."""
             # Create a directory if it doesn't exist.
             directory = os.path.dirname(path)
             
@@ -69,7 +97,12 @@ class Downloader:
             
             return
         
-        def start_download():
+        def start_download() -> bool:
+            """A function to begin a requests stream to download a file to a given directory.
+
+            Returns:
+                bool: True | False, on success or failure.
+            """
             with requests.get(url, stream = True, timeout = self.config.request_timeout) as response:
                 if response.status_code != 200:
                     print(f"ERROR | Request failed for {url} with status code: {response.status_code}")

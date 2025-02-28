@@ -2,12 +2,24 @@ from src.imports import *
 
 class Config:
     def __init__(self):
+        """Config object containing data of config.
+        
+        Attributes:
+            config_data (dict): Dictionary of config data extracted from config.yaml.
+            paths (Paths): Paths object containing data related to the paths of files.
+            downloader (Downloader): Downloader config object containing config for the downloader.
+        """
         self.config_data = self._get_config_data()
     
         self.paths = self.Paths(self.config_data["Paths"])
         self.downloader = self.Downloader(self.config_data["Downloader"])
     
     def _get_config_data(self) -> dict:
+        """A function that will get all the data pertaining to a config.yaml file.
+
+        Returns:
+            dict: Data extracted from the config.yaml file.
+        """
         path = "data"
         file_name = "config.yaml"
         
@@ -30,6 +42,15 @@ class Config:
             path: str,
             file_name: str
     ) -> dict:
+        """A function that will create a default config.yaml file if it couldn't find one.
+
+        Args:
+            path (str): Path to the file without the file name attached.
+            file_name (str): File name wihtout the path attached.
+
+        Returns:
+            dict: A dictionary of the default config.yaml configs.
+        """
         config_comments = (
             "# Coomer-Downloader Config File.\n"
             "# Paths: All configs related to paths; where files are located.\n"
@@ -75,6 +96,14 @@ class Config:
                 self,
                 path_data: dict
         ):
+            """A Paths object containing the locations of paths.
+
+            Args:
+                path_data (dict): Path data from the config.yaml file.
+            
+            Attributes:
+                links (str): Path to the links.txt file.
+            """
             self.links : str = path_data["links"]
     
     class Downloader:
@@ -82,6 +111,17 @@ class Config:
                 self,
                 downloader_data: dict
         ):
+            """A Downloader object containing the configuration for the Downloader class.
+
+            Args:
+                downloader_data (dict): Downloader config data extracted from the config.yaml file.
+            
+            Attributes:
+                max_workers (int): Maximum number of worker threads to concurrently download files.
+                chunk_size (int): Chunk size in kb to download each chunk in a file download stream.
+                request_timeout (int): Timeout of a request in seconds before it is dropped.
+                stream_timeout (int): Time between stream chunks before the request is dropped in seconds.
+            """
             self.max_workers : int = downloader_data["max_workers"]
             self.chunk_size : int = downloader_data["chunk_size"]
             self.request_timeout : int = downloader_data["request_timeout"]

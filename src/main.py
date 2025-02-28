@@ -8,6 +8,15 @@ from src.config import Config
 
 class Main:
     def __init__(self):
+        """The Main object that will handle the foundation of the program.
+        
+        Attributes:
+            config (Config): Config object containing config data.
+            api (API): API object to call API functions.
+            links (list[str]): A list of links from the links.txt file.
+            creators (list[Creator]): A list of creator objects created from the links list.
+            downloader (Downloader): Downloader object that calls the download of the creators.
+        """
         self.config = Config() # Initialise config object.
         self.api = API() # Initialise API object.
         

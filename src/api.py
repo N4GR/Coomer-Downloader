@@ -2,6 +2,14 @@ from src.imports import *
 
 class Paths:
     def __init__(self):
+        """A Paths object that contains data related to the API paths.
+        
+        Attributes:
+            url (str): Base URL for the API.
+            posts (Posts): Posts object that will contain endpoints related to posts.
+            file (File): File object that will contain endpoints related to files.
+            creator (Creator): Creator object that will contain endpoints related to a creator.
+        """
         self.url = "https://coomer.su/api/v1"
         self.posts = self.Posts()
         self.file = self.File()
@@ -9,18 +17,38 @@ class Paths:
             
     class Posts:
         def __init__(self):
+            """Posts object containing endpoints related to posts.
+            
+            Attributes:
+                from_user (str): The endpoint to get posts from a user.
+            """
             self.from_user = "/{service}/user/{creator_id}"
     
     class File:
         def __init__(self):
+            """File object containing endpoints related to files.
+            
+            Attributes:
+                from_hash (str): The endpoint to get file data from its hash.
+            """
             self.from_hash = "/search_hash/{file_hash}"
 
     class Creator:
         def __init__(self):
+            """Creator object containing endpoints related to creators.
+            
+            Attributes:
+                from_id (str): The endpoint to get profile data of a creator from their id.
+            """
             self.from_id = "/{service}/user/{creator_id}/profile"
 
 class API:
     def __init__(self):
+        """API Object that will handle all functions related to the API.
+        
+        Attributes:
+            paths (Paths): Paths object containing data related to the API URL and endpoints.
+        """
         self.paths = Paths()
     
     def get_creator_posts(
