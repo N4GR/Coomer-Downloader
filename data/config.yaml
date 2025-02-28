@@ -1,0 +1,8 @@
+Paths: # Paths to where files are.
+  links: "data/links.txt" # Path to the links file.
+
+Downloader: # Configs for the downloader.
+  max_workers: 10 # Max amount of threads to be downloading each post.
+  chunk_size: 8192 # Chunk size to download stream in kb.
+  request_timeout: 60 # Time before ending download request.
+  stream_timeout: 10 # Time before ending currently downloading file.

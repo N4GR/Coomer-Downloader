@@ -5,16 +5,16 @@ from src.objects import (
     Creator, Post
 )
 
+from src.config import Config
+
 class Downloader:
     def __init__(
             self,
-            creators: list[Creator]
+            creators: list[Creator],
+            config: Config.Downloader
     ) -> None:
         self.creators = creators
-        self.max_workers = 10 # Number to threads to run concurrently.
-        self.chunk_size = 8192 # Chunk size in kb to download as.
-        self.request_timeout = 60 # Requests timeout in seconds.
-        self.stream_timeout = 10 # Stream timeout in seconds if file transfer drops.
+        self.config = config
         
         for creator in self.creators:
             self.download_creator(creator)
@@ -24,7 +24,7 @@ class Downloader:
             creator: Creator
     ) -> None:
         # Create a pool to execute concurrent threads.
-        with ThreadPoolExecutor(max_workers = self.max_workers) as executor:
+        with ThreadPoolExecutor(max_workers = self.config.max_workers) as executor:
             for post in creator.posts:
                 executor.submit(self.download_post, post, creator) # Submit all potential threads to executor.
             
@@ -74,7 +74,7 @@ class Downloader:
             return
         
         def start_download():
-            with requests.get(url, stream = True, timeout = self.request_timeout) as response:
+            with requests.get(url, stream = True, timeout = self.config.request_timeout) as response:
                 if response.status_code != 200:
                     print(f"ERROR | Request failed for {url} with status code: {response.status_code}")
                     return False  # Return early if request failed
@@ -84,13 +84,13 @@ class Downloader:
                     last_received_time = time.time()  # Time when the last chunk was received
                     
                     # Iterate over the response in chunks to download
-                    for chunk in response.iter_content(chunk_size = self.chunk_size):
+                    for chunk in response.iter_content(chunk_size = self.config.chunk_size):
                         if chunk:
                             file.write(chunk)
                             last_received_time = time.time()  # Reset the idle check timer
                             
                         # Check if the stream has been idle for too long
-                        if time.time() - last_received_time > self.stream_timeout:  # 10 second idle check
+                        if time.time() - last_received_time > self.config.stream_timeout:  # 10 second idle check
                             print(f"ERROR | Stream idle for too long for {path}. Terminating download.")
                             return False  # Stop the download if idle time exceeds threshold
                     

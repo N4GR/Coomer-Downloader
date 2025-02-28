@@ -4,15 +4,20 @@ from src.imports import *
 from src.api import API
 from src.objects import Creator
 from src.downloader import Downloader
+from src.config import Config
 
 class Main:
     def __init__(self):
+        self.config = Config() # Initialise config object.
         self.api = API() # Initialise API object.
-
-        self.links = self.get_links("data/links.txt") # Get a list of links.
+        
+        self.links = self.get_links(self.config.paths.links) # Get a list of links.
         self.creators = self.get_creators(self.links)
         
-        self.downloader = Downloader(creators = self.creators) # Initialising downloader object.
+        self.downloader = Downloader(
+            creators = self.creators,
+            config = self.config.downloader
+        ) # Initialising downloader object.
 
     def get_links(
             self,
