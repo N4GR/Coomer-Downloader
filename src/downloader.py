@@ -2,7 +2,7 @@ from src.imports import *
 
 # Local imports.
 from src.objects import (
-    Creator, Post, File
+    Creator, Post
 )
 
 class Downloader:
@@ -11,41 +11,23 @@ class Downloader:
             creators: list[Creator]
     ) -> None:
         self.creators = creators
+        self.max_workers = 10 # Number to threads to run concurrently.
+        self.chunk_size = 8192 # Chunk size in kb to download as.
+        self.request_timeout = 60 # Requests timeout in seconds.
+        self.stream_timeout = 10 # Stream timeout in seconds if file transfer drops.
         
         for creator in self.creators:
             self.download_creator(creator)
-    
-    def chunk_list(
-            self,
-            lst: list,
-            chunk_size: int
-    ) -> list[list[File | Post]]:
-        return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
     
     def download_creator(
             self,
             creator: Creator
     ) -> None:
-        threads : list[threading.Thread] = [] # Thread storage.
-        
-        for chunk in self.chunk_list(creator.posts, 5): # Split posts into chunks of 5 for threading.
-            for post in chunk:
-                thread = threading.Thread(
-                    target = self.download_post,
-                    args = (post, creator)
-                )
-                
-                thread.start()
-                threads.append(thread)
+        # Create a pool to execute concurrent threads.
+        with ThreadPoolExecutor(max_workers = self.max_workers) as executor:
+            for post in creator.posts:
+                executor.submit(self.download_post, post, creator) # Submit all potential threads to executor.
             
-            for thread in threads:
-                thread.join() # Wait for all threads to end before continuing
-            
-            for thread in threads:
-                del thread
-            
-            threads.clear() # Clear the list of threads.
-        
         return
                         
     def download_post(
@@ -92,38 +74,36 @@ class Downloader:
             return
         
         def start_download():
-            print(f"Starting download for {path}...")  # Debug start of download
-            with requests.get(url, stream=True, timeout=60) as response:
+            with requests.get(url, stream = True, timeout = self.request_timeout) as response:
                 if response.status_code != 200:
-                    print(f"Request failed for {url} with status code: {response.status_code}")
+                    print(f"ERROR | Request failed for {url} with status code: {response.status_code}")
                     return False  # Return early if request failed
                     
                 # Open destination file in write-binary mode
                 with open(path, "wb") as file:
                     last_received_time = time.time()  # Time when the last chunk was received
-                    print(f"Started downloading {path}")
                     
                     # Iterate over the response in chunks to download
-                    for chunk in response.iter_content(chunk_size=8192):  # Chunks of 8MB
+                    for chunk in response.iter_content(chunk_size = self.chunk_size):
                         if chunk:
                             file.write(chunk)
                             last_received_time = time.time()  # Reset the idle check timer
                             
                         # Check if the stream has been idle for too long
-                        if time.time() - last_received_time > 10:  # 10 second idle check
-                            print(f"Stream idle for too long for {path}. Terminating download.")
+                        if time.time() - last_received_time > self.stream_timeout:  # 10 second idle check
+                            print(f"ERROR | Stream idle for too long for {path}. Terminating download.")
                             return False  # Stop the download if idle time exceeds threshold
                     
-            print(f"Download finished for {path}.")
+            print(f"COMPLETE | {path}")
             return True
         
         if file_exists() is True:
-            print("The file already exists, skipping download.")
+            print(f"WARNING | {path} already exists, skipping.")
             
             return
     
         create_path() # Creates the path for the download.
         
         if not start_download():
-            print(f"Download failed for {path}")
+            print(f"ERROR | Download failed for {path}")
             return  # Return if the download fails

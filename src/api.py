@@ -47,7 +47,7 @@ class API:
         while True:
             url = self.paths.url + endpoint + f"?o={offset}" # URL with enforced offset.
 
-            print(f"Sending request: {url}")
+            print(f"API | Sending request: {url}")
             response = requests.get(url) # Perform GET request.
 
             if response.status_code == 200:
