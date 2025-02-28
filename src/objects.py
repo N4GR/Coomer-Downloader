@@ -3,8 +3,7 @@ from src.api import API
 class File:
     def __init__(
             self,
-            file_data: dict,
-            api: API
+            file_data: dict
     ):
         path_data_url = "https://n4.coomer.su/data"
         
@@ -39,19 +38,25 @@ class Post:
         self.added : str = post_data["added"] # Date the post was added to the website.
         self.published : str = post_data["published"] # Date creator added the post.
         
-        self.files : list[File] = None
+        self.files : list[File] = self._get_post_files(post_data)
     
-    def get_files(
-        self,
-        files: list[dict],
-        api: API
+    def _get_post_files(
+            self,
+            post_data: dict
     ) -> list[File]:
-        files_obj_list : list[File] = []
+        attachments : list[dict] = post_data["attachments"]
+        files : list[dict] | dict = post_data["file"]
         
-        for file in files:
-            files_obj_list.append(File(file, api))
+        if type(files) is not list: files = [post_data["file"]] # Convert files to list.
+        attachments.extend(files) # Combine attachments and files
         
-        return files_obj_list
+        post_files : list[File] = []
+        for file_data in attachments:
+            if file_data == {}: continue # If file data is empty dictionary, continue.
+            
+            post_files.append(File(file_data)) # Add the file object to post_files.
+        
+        return post_files
 
 class Creator:
     def __init__(
@@ -123,27 +128,10 @@ class Creator:
         """
         posts : list[Post] = []
         
-        for post in api.get_creator_posts(service, id):
-            post_obj = Post(post)
+        for post_data in api.get_creator_posts(service, id):
+            post = Post(post_data)
             
-            # Check if post contains attachments.
-            if post["attachments"] == []: # If it doesn't.
-                # Check for files.
-                if post["file"] == {}: # If it doesn't.
-                    continue # Skip the post.
-            
-                else: # If it contains files.
-                    # Add the files to the post object.
-                    if type(post["file"]) is not list: # If it isn't a list, change it to one.
-                        post_obj.files = post_obj.get_files([post["file"]], api)
-                    
-                    else: # If it is, use the list.
-                        post_obj.files = post_obj.get_files(post["file"], api)
-            
-            else: # If it contains attachments.
-                # Add attachments to the post object.
-                post_obj.files = post_obj.get_files(post["attachments"], api)
-            
-            posts.append(post_obj)
+            if len(post.files) > 0: # If there are files in the post, add it to the posts list.
+                posts.append(post)
         
         return posts
