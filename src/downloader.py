@@ -64,11 +64,7 @@ class Downloader:
             directory = os.path.dirname(path)
             
             if directory and not os.path.exists(directory):
-                try:
-                    os.makedirs(directory) # Create the path directories if it doesn't exist.
-                
-                except FileExistsError as error:
-                    print(error)
+                os.makedirs(directory, exist_ok = True) # Create the path directories if it doesn't exist.
                     
             
             return
@@ -98,7 +94,7 @@ class Downloader:
             return True
         
         if file_exists() is True:
-            print(f"WARNING | {path} already exists, skipping.")
+            print(f"INFO | {path} already exists, skipping.")
             
             return
     

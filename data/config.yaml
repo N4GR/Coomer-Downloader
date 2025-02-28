@@ -1,8 +1,17 @@
-Paths: # Paths to where files are.
-  links: "data/links.txt" # Path to the links file.
+# Coomer-Downloader Config File.
+# Paths: All configs related to paths; where files are located.
+#    links: The path to the links file. (str)
+#
+# Downloader: All configs related to the downloader; workers, chunk size ect.
+#    max_workers: The amount of threads to be running simultaenously while downloading. (int)
+#    chunk_size: The size of each chunk in the stream when downloading in kb. (int)
+#    request_timeout: The time before ending a request to download a file in seconds. (int)
+#    stream_timeout: The time in between each stream chunk to check if the stream has been dropped in seconds. (int)
 
-Downloader: # Configs for the downloader.
-  max_workers: 10 # Max amount of threads to be downloading each post.
-  chunk_size: 8192 # Chunk size to download stream in kb.
-  request_timeout: 60 # Time before ending download request.
-  stream_timeout: 10 # Time before ending currently downloading file.
+Downloader:
+  chunk_size: 8192
+  max_workers: 10
+  request_timeout: 60
+  stream_timeout: 10
+Paths:
+  links: data/links.txt
