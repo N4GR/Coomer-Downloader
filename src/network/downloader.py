@@ -85,3 +85,51 @@ class Downloader:
                 return (file, file_full_dir)
         
         return (file, file_full_dir)
+
+    def download_profile(
+            self,
+            output_dir: str,
+            creator: Creator
+    ):
+        creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
+        profile_dir = f"{creator_dir}/profile.png"
+        
+        # Create the path to creator_dir if it doesn't exist.
+        os.makedirs(creator_dir, exist_ok = True)
+        
+        with requests.get(creator.profile, stream = True) as response:
+            if response.status_code == 200:
+                with open(profile_dir, "wb") as file:
+                    for chunk in response.iter_content(chunk_size = self.chunk_size):
+                        file.write(chunk)
+                
+                return True
+            
+            else:
+                return False
+        
+        return False
+    
+    def download_banner(
+            self,
+            output_dir: str,
+            creator: Creator
+    ):
+        creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
+        profile_dir = f"{creator_dir}/banner.png"
+        
+        # Create the path to creator_dir if it doesn't exist.
+        os.makedirs(creator_dir, exist_ok = True)
+        
+        with requests.get(creator.banner, stream = True) as response:
+            if response.status_code == 200:
+                with open(profile_dir, "wb") as file:
+                    for chunk in response.iter_content(chunk_size = self.chunk_size):
+                        file.write(chunk)
+                
+                return True
+            
+            else:
+                return False
+        
+        return False

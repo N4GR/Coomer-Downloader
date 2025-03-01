@@ -36,6 +36,10 @@ class DownloadCreators(QThread):
         for link in links:
             self.signal.emit(f"GETTING POSTS | {links}")
             creator = self.api.get_creator(link) # Gets creator object from URL.
+            
+            # Get creator profile and banner.
+            self.downloader.download_banner(self.output_dir, creator)
+            self.downloader.download_profile(self.output_dir, creator)
 
             completed_posts = 1
             

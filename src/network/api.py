@@ -6,6 +6,7 @@ from src.shared.funcs import path
 class API:
     def __init__(self):
         self.url = "https://coomer.su/api/v1"
+
         self.endpoints = self.Endpoints()
     
     class Endpoints:
@@ -165,6 +166,8 @@ class Creator:
         self.service : str = creator_data["service"]
         self.indexed : str = creator_data["indexed"]
         self.updated : str = creator_data["updated"]
+        self.profile : str = self._get_profile_img()
+        self.banner : str = self._get_profile_banner()
 
         self.posts, self.file_count = self._create_posts(api)
     
@@ -194,3 +197,15 @@ class Creator:
             posts.append(post) # Append if there is files.
         
         return (posts, file_counter)
+    
+    def _get_profile_img(self) -> str:
+        url = "https://img.coomer.su/icons/{service}/{creator_id}"
+        profile_url = url.replace("{service}", self.service).replace("{creator_id}", self.id)
+        
+        return profile_url
+    
+    def _get_profile_banner(self) -> str:
+        url = "https://img.coomer.su/banners/{service}/{creator_id}"
+        banner_url = url.replace("{service}", self.service).replace("{creator_id}", self.id)
+        
+        return banner_url
