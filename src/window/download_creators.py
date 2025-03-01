@@ -5,10 +5,13 @@ from src.network.api import (
     API, File, Creator, Post
 )
 
-from src.network.downloader import Downloader
+from src.network.downloader import (
+    Downloader, codes
+)
 
 class DownloadCreators(QThread):
     signal = Signal(str)
+    complete_signal = Signal(list)
     
     def __init__(
             self,
@@ -28,18 +31,24 @@ class DownloadCreators(QThread):
     
     def run(self):
         self.get_creators(self.links)
+        
+        # When complete, emit the complete signal with the links list.
+        self.complete_signal.emit(self.links)
     
     def get_creators(
             self,
             links: list[str]
     ) -> None:
         for link in links:
-            self.signal.emit(f"GETTING POSTS | {links}")
+            self.signal.emit(f"GETTING POSTS | {link}")
             creator = self.api.get_creator(link) # Gets creator object from URL.
             
             # Get creator profile and banner.
             self.downloader.download_banner(self.output_dir, creator)
+            self.signal.emit(f"BANNER | Downloaded: {creator.banner}")
+            
             self.downloader.download_profile(self.output_dir, creator)
+            self.signal.emit(f"PRFOFILE | Downloaded: {creator.profile}")
 
             completed_posts = 1
             
@@ -87,6 +96,8 @@ class DownloadCreators(QThread):
         Returns:
             tuple (File, str): File object downloaded and the directory the file was downloaded to.
         """
+        self.signal.emit(f"DOWNLOADING FILE | {file.path}")
+        
         completed_downloader = self.downloader.download_file(
             self.output_dir,
             file,
@@ -98,11 +109,18 @@ class DownloadCreators(QThread):
     
     def on_file_complete(
             self,
-            future: Future[tuple[File, str]]
+            future: Future[tuple[File, str, int]]
     ) -> None:
-        file, output_dir = future.result() # File object and output directory string of downloaded file.
+        file, output_dir, code = future.result() # File object and output directory string of downloaded file.
         
         with self.lock: # Add onto the completed files counter.
             self.completed_files += 1
+        
+        # Check codes.
+        if code != 2: # If it's not a success code.
+            code_text = codes[code]
             
-            self.signal.emit(f"DOWNLOADED FILE | {self.completed_files}/{self.files_to_complete} -> {output_dir}")
+            self.signal.emit(f"DOWNLOAD FAILED | Code {code} {code_text} -> {output_dir}") # Print error.
+            return # Return function.
+            
+        self.signal.emit(f"DOWNLOADED FILE | {self.completed_files}/{self.files_to_complete} -> {output_dir}") # If all passes, print success to terminal.

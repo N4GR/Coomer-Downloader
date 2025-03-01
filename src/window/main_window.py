@@ -74,34 +74,6 @@ class MainWindow(QWidget):
             self.terminal.add_text(f"Set {dir_name} as output directory.")
     
     def on_start_clicked(self):
-        def disable_interactions():
-            """A function to halt all interactions with configurations while the start process is being handled."""
-            self.side_bar.start_button.setDisabled(True)
-            self.terminal.add_text("DISABLE | Start button.")
-            
-            self.link_input.text_edit.setDisabled(True)
-            self.terminal.add_text("DISABLE | Link inputs.")
-            
-            self.file_input.button.setDisabled(True)
-            self.terminal.add_text("DISABLE | File inputs.")
-            
-            self.output_directory.button.setDisabled(True)
-            self.terminal.add_text("DISABLE | Output directory inputs.")
-        
-        def enable_interactions():
-            """A function that will set all interactions to enabled."""
-            self.side_bar.start_button.setEnabled(True)
-            self.terminal.add_text("ENABLE | Start button.")
-            
-            self.link_input.text_edit.setEnabled(True)
-            self.terminal.add_text("ENABLE | Link inputs.")
-            
-            self.file_input.button.setEnabled(True)
-            self.terminal.add_text("ENABLE | File inputs.")
-            
-            self.output_directory.button.setEnabled(True)
-            self.terminal.add_text("ENABLE | Output directory inputs.")
-        
         def check_output_directory() -> bool:
             """A function that will check an output directory - returning False if it failed.
 
@@ -232,7 +204,7 @@ class MainWindow(QWidget):
         if check_inputted_links() is False: return
         
         self.terminal.add_text("Starting processes...")
-        disable_interactions() # Disable interactions before starting processes.
+        self.disable_interactions() # Disable interactions before starting processes.
         
         links = [link.strip() for link in self.link_input.text_edit.toPlainText().split(",")] # Get a list of items given in link input.
         links_from_file = []
@@ -261,7 +233,7 @@ class MainWindow(QWidget):
 
             self.terminal.add_text("NO LINKS | No links found.")
             
-            enable_interactions() # Re-enable all interactions.
+            self.enable_interactions() # Re-enable all interactions.
             return
         
         self.start_links_download(links) # Start the creator threads to get creators.
@@ -272,6 +244,7 @@ class MainWindow(QWidget):
         # Start downloading a creator in a different thread.
         self.download_worker = DownloadCreators(self.api, links, output_dir)
         self.download_worker.signal.connect(self.on_download_signal)
+        self.download_worker.complete_signal.connect(self.on_all_complete)
         self.download_worker.start()
     
     def on_download_signal(
@@ -279,3 +252,39 @@ class MainWindow(QWidget):
             result: str
     ) -> None:
         self.terminal.add_text(result)
+    
+    def on_all_complete(
+            self,
+            result: list[str]
+    ) -> None:
+        self.terminal.add_text(f"PROCESSES COMPLETE | {len(result)} creators.")
+        
+        self.enable_interactions()
+    
+    def enable_interactions(self):
+        """A function that will set all interactions to enabled."""
+        self.side_bar.start_button.setEnabled(True)
+        self.terminal.add_text("ENABLE | Start button.")
+        
+        self.link_input.text_edit.setEnabled(True)
+        self.terminal.add_text("ENABLE | Link inputs.")
+        
+        self.file_input.button.setEnabled(True)
+        self.terminal.add_text("ENABLE | File inputs.")
+        
+        self.output_directory.button.setEnabled(True)
+        self.terminal.add_text("ENABLE | Output directory inputs.")
+    
+    def disable_interactions(self):
+        """A function to halt all interactions with configurations while the start process is being handled."""
+        self.side_bar.start_button.setDisabled(True)
+        self.terminal.add_text("DISABLE | Start button.")
+        
+        self.link_input.text_edit.setDisabled(True)
+        self.terminal.add_text("DISABLE | Link inputs.")
+        
+        self.file_input.button.setDisabled(True)
+        self.terminal.add_text("DISABLE | File inputs.")
+        
+        self.output_directory.button.setDisabled(True)
+        self.terminal.add_text("DISABLE | Output directory inputs.")

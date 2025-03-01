@@ -5,6 +5,13 @@ from src.network.api import (
     File, Creator, Post
 )
 
+codes = {
+    1: "File exists.",
+    2: "Success.",
+    3: "Request denied.",
+    4: "Failed request."
+}
+
 class Downloader:
     def __init__(self):
         self.chunk_size = 8192
@@ -44,7 +51,7 @@ class Downloader:
         file: File,
         post: Post,
         creator: Creator
-    ) -> tuple[File, str]:
+    ) -> tuple[File, str, int]:
         """A function that uses requests to download a file from a creator.
 
         Args:
@@ -67,6 +74,10 @@ class Downloader:
         if not os.path.exists(file_dir):
             os.makedirs(file_dir, exist_ok = True) # Don't notify if some paths already exist.
         
+        # If the file already exists, return file, full_dir and code 1.
+        if os.path.exists(file_full_dir):
+            return (file, file_full_dir, 1) # Code 1: File already exists.
+        
         # Send a GET request to retrieve the stream of a file.
         with requests.get(url, stream = True) as response:
             # Check if the request is successful.
@@ -77,14 +88,14 @@ class Downloader:
                     for chunk in response.iter_content(chunk_size = self.chunk_size):
                         file.write(chunk)
         
-                return (file, file_full_dir) # Return file and output directory if successful
+                return (file, file_full_dir, 2) # Code 2: Success.
             
             else:
                 print(f"{url} FAILED {response.status_code}")
                 
-                return (file, file_full_dir)
+                return (file, file_full_dir, 3) # Code 3: Request denied.
         
-        return (file, file_full_dir)
+        return (file, file_full_dir, 4) # Code 4: Failed request.
 
     def download_profile(
             self,
