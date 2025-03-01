@@ -16,7 +16,7 @@ class FileInput(QWidget):
         self._add_modules()
     
     def _add_design(self):
-        self.setFixedSize(700, 75)
+        self.setFixedSize(350, 75)
         self.move(100, 100)
     
     def _add_modules(self):
@@ -73,7 +73,7 @@ class FileInput(QWidget):
             self._add_attributes()
 
         def _add_design(self):
-            self.setFixedSize(675, 25)
+            self.setFixedSize(325, 25)
             
             self.setPlaceholderText("Links directory...")
             

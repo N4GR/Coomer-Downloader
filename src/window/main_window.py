@@ -11,6 +11,7 @@ from src.window.terminal import Terminal
 from src.window.link_input import LinkInput
 from src.window.file_input import FileInput
 from src.window.output_directory import OutputDirectory
+from src.window.avatar_display import AvatarDisplay
 
 class MainWindow(QWidget):
     def __init__(
@@ -32,7 +33,7 @@ class MainWindow(QWidget):
     
     def _add_design(self):
         """A function to add design to the QWidget."""
-        self.setFixedSize(800, 600) # Sets the window to a fixed width and height.
+        self.setFixedSize(1500, 600) # Sets the window to a fixed width and height.
         self.setWindowTitle("N4GR - Coomer-Downloader") # Set the window title.
     
         self.setStyleSheet("background-color: rgb(33, 33, 33)") # Assigning background colour to main window.
@@ -46,6 +47,7 @@ class MainWindow(QWidget):
         self.link_input = LinkInput(self)
         self.file_input = FileInput(self)
         self.output_directory = OutputDirectory(self)
+        self.avatar_display = AvatarDisplay(self)
         
         # Creating a connection for file input to interact with main window.
         self.file_input.button.clicked.connect(self.on_file_input_clicked)

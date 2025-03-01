@@ -29,7 +29,7 @@ class Terminal(QPlainTextEdit):
             f"color: rgb(49, 255, 0);" # Font colour.
         )
     
-        self.setFixedSize(700, 300) # Setting fixed size.
+        self.setFixedSize(1400, 300) # Setting fixed size.
         
         self.move(100, 300)
     

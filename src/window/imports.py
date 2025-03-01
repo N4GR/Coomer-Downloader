@@ -8,7 +8,9 @@ from src.shared.imports import *
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel,
     QPlainTextEdit, QTextEdit, QFileDialog,
-    QPushButton, QLineEdit, QMessageBox
+    QPushButton, QLineEdit, QMessageBox,
+    QGridLayout, QScrollArea, QHBoxLayout,
+    QVBoxLayout
 )
 
 from PySide6.QtGui import (
