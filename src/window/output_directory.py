@@ -53,7 +53,7 @@ class OutputDirectory(QWidget):
             super().__init__(parent)
             # Setting design of widget.
             self._add_design()
-
+        
         def _add_design(self):
             self.setFixedSize(200, 25)
             self.move(10, 0)

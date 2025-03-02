@@ -2,7 +2,6 @@ from src.window.imports import *
 
 # Local imports.
 from src.shared.funcs import path
-from src.network.api import API
 from src.window.download_creators import DownloadCreators
 
 # Widgets.
@@ -13,13 +12,15 @@ from src.window.file_input import FileInput
 from src.window.output_directory import OutputDirectory
 from src.window.avatar_display import AvatarDisplay
 
+from src.network.api import (
+    Creator, Profile
+)
+
 class MainWindow(QWidget):
     def __init__(
             self
     ) -> None:
         super().__init__()
-        self.api = API() # Initialise API object.
-        
         # Setting design of window.
         self._add_design()
         
@@ -49,33 +50,31 @@ class MainWindow(QWidget):
         self.output_directory = OutputDirectory(self)
         self.avatar_display = AvatarDisplay(self)
         
-        # Creating a connection for file input to interact with main window.
-        self.file_input.button.clicked.connect(self.on_file_input_clicked)
-        
-        # Creating a connection for output directory to interact with the main window.
-        self.output_directory.button.clicked.connect(self.on_output_dir_clicked)
-        
-        # Cerating a connection for the start button to interact with the main window.
-        self.side_bar.start_button.clicked.connect(self.on_start_clicked)
-        
-    def on_file_input_clicked(self):
-        # Open the explorer to retrieve a text file.
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Text File", "", "Text Files (*.txt)")
-        
-        # If a file is selected, add it to the file_input text and add a terminal log entry.
-        if file_path:
-            self.file_input.text_edit.setText(file_path)
-            self.terminal.add_text(f"Set {file_path} as links document.")
+        self._add_widget_connections()
     
-    def on_output_dir_clicked(self):
-        dir_name = QFileDialog.getExistingDirectory(self, "Select output directory")
+    def _add_widget_connections(self):
+        def open_file_input():
+            # Open the explorer to retrieve a text file.
+            file_path, _ = QFileDialog.getOpenFileName(self, "Select Text File", "", "Text Files (*.txt)")
+            
+            # If a file is selected, add it to the file_input text and add a terminal log entry.
+            if file_path:
+                self.file_input.text_edit.setText(file_path)
+                self.terminal.add_text(f"Set {file_path} as links document.")
         
-        # If the directory is selected, add it to the output_directory text input and log it to terminal.
-        if dir_name:
-            self.output_directory.text_edit.setText(dir_name)
-            self.terminal.add_text(f"Set {dir_name} as output directory.")
+        def open_output_input():
+            dir_name = QFileDialog.getExistingDirectory(self, "Select output directory")
+        
+            # If the directory is selected, add it to the output_directory text input and log it to terminal.
+            if dir_name:
+                self.output_directory.text_edit.setText(dir_name)
+                self.terminal.add_text(f"Set {dir_name} as output directory.")
+        
+        self.file_input.button.clicked.connect(open_file_input)
+        self.output_directory.button.clicked.connect(open_output_input)
+        self.side_bar.start_button.clicked.connect(self.start_downloading)
     
-    def on_start_clicked(self):
+    def start_downloading(self):
         def check_output_directory() -> bool:
             """A function that will check an output directory - returning False if it failed.
 
@@ -241,27 +240,32 @@ class MainWindow(QWidget):
         self.start_links_download(links) # Start the creator threads to get creators.
     
     def start_links_download(self, links: list[str]):
-        output_dir = self.output_directory.text_edit.text()
+        def on_terminal(result: str) -> None:
+            self.terminal.add_text(result)
+        
+        def on_complete(result: list[str]) -> None:
+            self.terminal.add_text(f"PROCESSES COMPLETE | {len(result)} creators.")
+            
+            self.enable_interactions()
+        
+        def on_avatar(result: Profile) -> None:
+            self.avatar_display.add_avatar(result) # Add creator to display.
+        
+        def on_file_complete(result: dict) -> None:
+            self.avatar_display.set_avatar_file_count(result)
         
         # Start downloading a creator in a different thread.
-        self.download_worker = DownloadCreators(self.api, links, output_dir)
-        self.download_worker.signal.connect(self.on_download_signal)
-        self.download_worker.complete_signal.connect(self.on_all_complete)
-        self.download_worker.start()
-    
-    def on_download_signal(
-            self,
-            result: str
-    ) -> None:
-        self.terminal.add_text(result)
-    
-    def on_all_complete(
-            self,
-            result: list[str]
-    ) -> None:
-        self.terminal.add_text(f"PROCESSES COMPLETE | {len(result)} creators.")
+        self.download_worker = DownloadCreators(
+            links = links,
+            output_dir = self.output_directory.text_edit.text()
+        )
         
-        self.enable_interactions()
+        self.download_worker.terminal_signal.connect(on_terminal)
+        self.download_worker.complete_signal.connect(on_complete)
+        self.download_worker.avatar_signal.connect(on_avatar)
+        self.download_worker.file_signal.connect(on_file_complete)
+        
+        self.download_worker.start()
     
     def enable_interactions(self):
         """A function that will set all interactions to enabled."""

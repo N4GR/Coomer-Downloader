@@ -1,121 +1,6 @@
 from src.network.imports import *
 
-# Local imports
-from src.shared.funcs import path
-
-class API:
-    def __init__(self):
-        self.url = "https://coomer.su/api/v1"
-
-        self.endpoints = self.Endpoints()
-    
-    class Endpoints:
-        def __init__(self):
-            endpoints = self._get_endpoints()
-            
-            self.posts = self.Posts(endpoints["Posts"])
-            self.creators = self.Creators(endpoints["Creators"])
-            self.comments = self.Comments(endpoints["Comments"])
-            self.file = self.File(endpoints["File"])
-        
-        def _get_endpoints(self):
-            endpoints_path = path("data/api/endpoints.yaml")
-        
-            with open(endpoints_path, "r", encoding = "utf-8") as file:
-                endpoints = yaml.safe_load(file)
-            
-            return endpoints
-        
-        class Posts:
-            def __init__(
-                    self,
-                    post_data: dict[str]
-            ) -> None:
-                self.list_all_creators : str = post_data["ListAllCreators"]
-                self.list_recent_posts : str = post_data["ListRecentPosts"]
-                self.list_creator_posts : str = post_data["ListCreatorPosts"]
-                self.get_creator_announcements: str = post_data["GetCreatorAnnouncements"]
-                self.get_post : str = post_data["GetPost"]
-                self.get_post_revisions : str = post_data["GetPostRevisions"]
-        
-        class Creators:
-            def __init__(
-                    self,
-                    creators_data: dict[str]
-            ) -> None:
-                self.get_creator : str = creators_data["GetCreator"]
-                self.get_creator_linked_accounts : str = creators_data["GetCreatorLinkedAccounts"]
-                self.get_creator_tags : str = creators_data["GetCreatorTags"]
-        
-        class Comments:
-            def __init__(
-                    self,
-                    comments_data: dict[str]
-            ) -> None:
-                self.get_post_comments : str = comments_data["GetPostComments"]
-        
-        class File:
-            def __init__(
-                    self,
-                    file_data: dict[str]
-            ) -> None:
-                self.from_hash : str = file_data["FromHash"]
-    
-    def get_creator_posts(
-            self,
-            creator_url: str
-    ) -> list[dict]:
-        step_count = 50 # API limit, can only get 50 posts at a time.
-        current_step = 0 # Current step tracking.
-        
-        service = creator_url.split("https://coomer.su/")[1].split("/")[0] # Get service from url.
-        creator_id = creator_url.split("/")[-1]
-
-        endpoint = self.endpoints.posts.list_creator_posts.replace("{service}", service).replace("{creator_id}", creator_id)
-        
-        posts : list[dict] = []
-        while True: # Create a loop to add posts to list until it can't no more.
-            request = requests.get(f"{self.url}{endpoint}?o={current_step}") # Send a get request.
-            print(f"Sending request: {self.url}{endpoint}?o={current_step}")
-            
-            if request.status_code == 200:
-                post = request.json()
-                
-                posts.extend(post)
-            
-            else:
-                print(f"{self.url}{endpoint}?o={current_step} failed, error: {request.status_code}")
-            
-            if len(post) != step_count: # If there's less posts than 50.
-                break # Should indicate it was the last post, so break.
-            
-            current_step += step_count # Add 50 onto the step count.
-        
-        return posts
-        
-    def get_creator(
-            self,
-            creator_url: str
-    ):
-        service = creator_url.split("https://coomer.su/")[1].split("/")[0] # Get service from url.
-        creator_id = creator_url.split("/")[-1]
-        
-        endpoint = self.endpoints.creators.get_creator.replace("{service}", service).replace("{creator_id}", creator_id)
-        full_url = self.url + endpoint
-        
-        with requests.get(full_url) as request:
-            if request.status_code == 200:
-                data = request.json()
-            
-            else:
-                print(f"Failed to get creator: {full_url}")
-
-        creator = Creator(
-            api = self,
-            creator_data = data
-        )
-        
-        return creator
+coomer_api_url = "https://coomer.su/api/v1"
 
 class File:
     def __init__(
@@ -155,57 +40,89 @@ class Post:
         
         return file_list
 
-class Creator:
-    def __init__(
-        self,
-        api: API,
-        creator_data: dict[str]
-    ):
-        self.id : str = creator_data["id"]
-        self.name : str = creator_data["name"]
-        self.service : str = creator_data["service"]
-        self.indexed : str = creator_data["indexed"]
-        self.updated : str = creator_data["updated"]
-        self.profile : str = self._get_profile_img()
-        self.banner : str = self._get_profile_banner()
-
-        self.posts, self.file_count = self._create_posts(api)
-    
-    def _create_posts(
-            self,
-            api: API
-    ) -> tuple[list[Post], int]:
-        """A function to retrieve and handle posts of a creator.
+class Profile:
+    def __init__(self, url: str):
+        """A class object which is a profile of a user; doesn't contain their posts.
 
         Args:
-            api (API): _description_
-
-        Returns:
-            list[Post]: _description_
+            url (str): URL of the user.
         """
-        posts_dict = api.get_creator_posts(f"https://coomer.su/{self.service}/user/{self.id}")
+        self.url = url
         
-        file_counter = 0 # Count how many files are in all posts.
+        data = self._get_profile_data()
+        self.id : str = data["id"]
+        self.name : str = data["name"]
+        self.service : str = data["service"]
+        self.indexed : str = data["indexed"]
+        self.updated : str = data["updated"]
+        
+        self.image : str = f"https://img.coomer.su/icons/{self.service}/{self.id}"
+        self.banner : str = f"https://img.coomer.su/banners/{self.service}/{self.id}"
+    
+    def _get_profile_data(self) -> dict:
+        service = self.url.split("/")[-3] # https://coomer.su/onlyfans/user/belledelphine -> onlyfans
+        id = self.url.split("/")[-1] # https://coomer.su/onlyfans/user/belledelphine -> belledelphine
+        
+        # Send a GET request to obtain the profile data.
+        with requests.get(f"{coomer_api_url}/{service}/user/{id}/profile") as response:
+            if response.status_code == 200:
+                return response.json()
+            
+            else:
+                return None
+
+class Creator(Profile):
+    def __init__(self, url: str):
+        super().__init__(url)
+        """A subclass of profile, a creator is someone who contains posts.
+        
+        Args:
+            url (str): URL of the user.
+        """
+        
+        self.posts = self._get_posts()
+        self.file_count = self._get_file_count()
+    
+    def _get_posts(self) -> list[Post]:
+        step_count = 50 # Enforced by API.
+        current_step = 0 # Step storage.
+        
+        url = f"{coomer_api_url}/{self.service}/user/{self.id}"
+        
+        pages : list[dict] = [] # Page storage.
+        while True:
+            # Send a GET request for the posts.
+            with requests.get(f"{url}?o={current_step}") as response:
+                if response.status_code == 200:
+                    page = response.json()
+                    pages.extend(page) # Add post dict list onto posts.
+                
+                if len(page) != step_count: # Signifies last page.
+                    break
+                
+                else:
+                    current_step += step_count # Add onto step_count to next page.
+        
+        # Create the Post list object.
         posts : list[Post] = []
-        for post_dict in posts_dict:
+        for post_dict in pages:
             post = Post(post_dict)
             
-            if not post.files: # If there are no files, skip the post.
+            # If no files are found, don't add it to the posts.            
+            if not post.files:
                 continue
             
-            file_counter += len(post.files)
-            posts.append(post) # Append if there is files.
+            else:
+                posts.append(post) # Add onto the post list.
         
-        return (posts, file_counter)
-    
-    def _get_profile_img(self) -> str:
-        url = "https://img.coomer.su/icons/{service}/{creator_id}"
-        profile_url = url.replace("{service}", self.service).replace("{creator_id}", self.id)
+        # Return the list of posts.
+        return posts
+            
+    def _get_file_count(self) -> int:
+        file_counter = 0
         
-        return profile_url
-    
-    def _get_profile_banner(self) -> str:
-        url = "https://img.coomer.su/banners/{service}/{creator_id}"
-        banner_url = url.replace("{service}", self.service).replace("{creator_id}", self.id)
+        for post in self.posts:
+            for file in post.files:
+                file_counter += 1
         
-        return banner_url
+        return file_counter

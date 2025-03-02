@@ -2,8 +2,6 @@ from src.shared.imports import *
 from src.window.imports import QApplication
 from src.window.main_window import MainWindow
 
-from src.network.api import API
-
 class Main:
     def __init__(
             self,

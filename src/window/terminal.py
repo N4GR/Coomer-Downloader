@@ -1,5 +1,8 @@
 from src.window.imports import * 
 
+from src.shared.funcs import path
+from src.window.objects import Fonts
+
 class Terminal(QPlainTextEdit):
     def __init__(
             self,
@@ -8,6 +11,7 @@ class Terminal(QPlainTextEdit):
         super().__init__(parent)
         # Set arguments for widget.
         self._set_args()
+        self.fonts = Fonts()
         
         # Add design to widget.
         self._add_design()
@@ -19,11 +23,18 @@ class Terminal(QPlainTextEdit):
         self.setReadOnly(True)
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
     
-    def _add_design(self) -> None:
-        font = QFont("Courier New", 10)
+    def _get_font(self) -> QFont:
+        font = self.fonts.caskaydia.light
+        font.setPointSize(10) # Set size to 10.
         font.setStyleHint(QFont.StyleHint.Monospace)
+    
+        return font
+    
+    def _add_design(self) -> None:
+        font = self._get_font()
         
         self.setFont(font)
+        
         self.setStyleSheet(
             f"background-color: rgb(0, 0, 0);" # Background colour.
             f"color: rgb(49, 255, 0);" # Font colour.
