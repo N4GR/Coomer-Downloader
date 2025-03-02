@@ -4,12 +4,16 @@ from src.window.imports import *
 from src.network.api import Profile
 from src.network.downloader import get_pixmap_from_url
 
+from src.window.objects import Fonts
+
 class AvatarDisplay(QWidget):
     def __init__(
             self,
             parent: QWidget
     ) -> None:
         super().__init__(parent)
+        self.fonts = Fonts()
+        
         self._add_design()
     
         # Add widgets to the scroll area.
@@ -52,7 +56,7 @@ class AvatarDisplay(QWidget):
                 self.row += 1
                 self.col = 0
         
-        avatar = Avatar(profile)
+        avatar = Avatar(profile, self.fonts)
         self.grid_layout.addWidget(avatar, self.row, self.col)
         
         # Add 1 to column.
@@ -79,21 +83,24 @@ class AvatarDisplay(QWidget):
 class Avatar(QWidget):
     def __init__(
             self,
-            profile: Profile
+            profile: Profile,
+            fonts: Fonts
     ) -> None:
         super().__init__()
+        self.fonts = fonts
+        
         self.profile = profile
         
         self._add_design()
         self._add_widgets()
     
     def _add_design(self):
-        self.setFixedSize(100, 150)
+        self.setFixedSize(100, 130)
     
     def _add_widgets(self):
         self.image = self.Image(self, self.profile)
-        self.text_label = self.TextLabel(self, self.profile)
-        self.file_count_label = self.FileCount(self)
+        self.text_label = self.TextLabel(self, self.profile, self.fonts)
+        self.file_count_label = self.FileCount(self, self.fonts)
     
     class Image(QLabel):
         def __init__(
@@ -109,7 +116,7 @@ class Avatar(QWidget):
         def _add_design(self):
             self.setStyleSheet("background-color: white;")
             self.setFixedSize(100, 100)
-            self.move(0, 25) # Move it down 25px for the file count.
+            self.move(0, 15) # Move it down 25px for the file count.
             
             pixmap = get_pixmap_from_url(self.profile.image).scaled(self.size()) # Get the profile image and resize it to fit image label.
             
@@ -119,33 +126,56 @@ class Avatar(QWidget):
         def __init__(
                 self,
                 parent: QWidget,
-                profile: Profile
+                profile: Profile,
+                fonts: Fonts
         ) -> None:
             super().__init__(parent)
             self.profile = profile
+            self.fonts = fonts
             
             self._add_design()
         
+        def _get_font(self) -> QFont:
+            font = self.fonts.caskaydia.bold
+            font.setPointSize(10) # Set size to 10.
+            font.setStyleHint(QFont.StyleHint.Monospace)
+            font.setBold(True)
+        
+            return font
+        
         def _add_design(self):
-            self.setText(self.profile.name.upper()) # Set the avatar label to the username.
+            self.setText(self.profile.name.capitalize()) # Set the avatar label to the username.
             self.setAlignment(Qt.AlignmentFlag.AlignCenter) # Align the text to the centre.
-            self.setFixedSize(100, 25) # Set a fixed size for the label.
-            self.move(0, 125) # Move the label below the image.
+            self.setFixedSize(100, 15) # Set a fixed size for the label.
+            self.setFont(self._get_font())
+            self.move(0, 117) # Move the label below the image.
     
     class FileCount(QLabel):
         def __init__(
                 self,
-                parent: QWidget
+                parent: QWidget,
+                fonts: Fonts
         ) -> None:
             super().__init__(parent)
+            self.fonts = fonts
+            
             self._add_design()
+        
+        def _get_font(self) -> QFont:
+            font = self.fonts.caskaydia.light
+            font.setPointSize(8) # Set size to 10.
+            font.setStyleHint(QFont.StyleHint.Monospace)
+        
+            return font
         
         def _add_design(self):
             self.setText("0/0") # File placeholder.
             self.setFixedSize(self.parentWidget().width(), 25) # Fill width, but not height.
-            self.setAlignment(Qt.AlignmentFlag.AlignRight) # Align to right of avatar.
+            self.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop) # Align to right of avatar.
             
             # Hide background of file count, so avatar can be displayed behind.
             self.setStyleSheet("background-color: transparent;")
+            
+            self.setFont(self._get_font())
             
             self.setHidden(True) # Hide it at first, only display on text change.

@@ -99,7 +99,7 @@ class DownloadCreators(QThread):
                 completed_posts += 1
                 
                 # When the post finishes downloading.
-                self.terminal_signal.emit(f"POST COMPLETE | {completed_posts}/{len(creator.posts)} -> {post.title.strip()}")
+                self.terminal_signal.emit(f"POST COMPLETE | {completed_posts}/{len(creator.posts)} -> {post.title.strip().replace("\n", "")}")
     
             # When complete, add 1 to column.
             self.column += 1
@@ -165,7 +165,7 @@ class DownloadCreators(QThread):
             self.terminal_signal.emit(f"DOWNLOAD FAILED | Code {code} {code_text} -> {output_dir}") # Print error.
             return # Return function.
             
-        self.terminal_signal.emit(f"DOWNLOADED FILE | {self.completed_files}/{self.files_to_complete} -> {output_dir}") # If all passes, print success to terminal.
+        self.terminal_signal.emit(f"DOWNLOADED FILE | {self.completed_files}/{creator.file_count} -> {output_dir}") # If all passes, print success to terminal.
         
         # Send the file complete signal to the avatar display.
         file_dict = {
