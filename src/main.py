@@ -1,89 +1,48 @@
-from src.imports import *
-
-# Local imports.
-from src.api import API
-from src.objects import Creator
-from src.downloader import Downloader
-from src.config import Config
+from src.shared.imports import *
+from src.window.imports import QApplication
+from src.window.main_window import MainWindow
 
 class Main:
-    def __init__(self):
-        """The Main object that will handle the foundation of the program.
-        
-        Attributes:
-            config (Config): Config object containing config data.
-            api (API): API object to call API functions.
-            links (list[str]): A list of links from the links.txt file.
-            creators (list[Creator]): A list of creator objects created from the links list.
-            downloader (Downloader): Downloader object that calls the download of the creators.
-        """
-        self.config = Config() # Initialise config object.
-        self.api = API() # Initialise API object.
-        
-        self.links = self.get_links(self.config.paths.links) # Get a list of links.
-        self.creators = self.get_creators(self.links)
-        
-        self.downloader = Downloader(
-            creators = self.creators,
-            config = self.config.downloader
-        ) # Initialising downloader object.
-
-    def get_links(
+    def __init__(
             self,
-            links_dir: str
-    ) -> list[str]:
-        """A function to obtain a list of links from the links.txt file.
+            launch_args: list[str]
+    ) -> None:
+        # If the program was launched with --cli arg, run in CLI instead of with window.
+        if self.in_cli(launch_args) is True:
+            self.run_cli()
+        else:
+            self.run_window() # Run in window mode if program was launched without --cli argument.
+    
+    def in_cli(
+        self,
+        launch_args: list[str]
+    ) -> bool:
+        """A function to check if the program was launched with the "--cli" argument to launch the window or not.
 
         Args:
-            links_dir (str): Path to the links.txt file.
+            launch_args (list[str]): A list of strings that were parsed on launch.
 
         Returns:
-            list[str]: A list of links from the links.txt file.
+            bool: True | False - whether the program was launched with --cli flag or not.
         """
-        with open(links_dir, "r", encoding = "utf-8") as file:
-            data = [x.replace("\n", "") for x in file.readlines()] # Removes the newline \n for every line.
+        cli_arg = "--cli"
+        
+        if cli_arg in launch_args:
+            return True
+        else:
+            return False
     
-        data = list(set(data)) # Create a set from the data to remove duplicate entries and then convert it back to a list.
+    def run_cli(self):
+        """A function that will run the CLI if the --clie argument appears in launch variables."""
+        print("Running the program in CLI mode...")
     
-        return data
-    
-    def get_creators(
-            self,
-            links: list[str]
-    ) -> list[Creator]:
-        """A function to retrieve a list of creator objects from a list of creator URL's.
-
-        Args:
-            links (list[str]): A list of creator URL's as a string.
-
-        Returns:
-            list[Creator]: A list of creator objects.
-        """
-        creators : list[Creator] = []
+    def run_window(self):
+        """A function that will run the window if the --cli argument is missing from launch variables."""
+        print("Running in window mode.")
         
-        def add_creator(url: str) -> None:
-            creator = Creator(url, self.api)
-            
-            creators.append(creator)
-            
-            return
+        self.application = QApplication([]) # Create the application for PySide6.
+        self.main_window = MainWindow() # Create main window object.
+        self.main_window.show() # Show the main window.
         
-        threads : list[threading.Thread] = []
-        for link in links:
-            thread = threading.Thread(
-                target = add_creator,
-                args = (link, )
-            )
-            
-            threads.append(thread)
-            thread.start()
+        self.application.exec_() # Execute PySide6 event loop.
         
-        for thread in threads:
-            thread.join() # Wait for threads to end before continuing.
-        
-        for thread in threads:
-            del thread
-        
-        threads.clear() # Clear the list of threads.
-        
-        return creators

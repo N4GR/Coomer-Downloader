@@ -1,4 +1,5 @@
 from src.main import Main
+from src.shared.imports import sys
 
 if __name__ == "__main__":
-    Main()
+    main = Main(sys.argv)

@@ -1,0 +1,19 @@
+Posts:
+  ListAllCreators: "/creators.txt"
+  ListRecentPosts: "/posts"
+  ListCreatorPosts: "/{service}/user/{creator_id}"
+  GetCreatorAnnouncements: "/{service}/user/{creator_id}/announcements"
+  GetPost: "/{service}/user/{creator_id}/post/{post_id}"
+  GetPostRevisions: "/{service}/user/{creator_id}/post/{post_id}/revisions"
+
+Creators:
+  GetCreator: "/{service}/user/{creator_id}/profile"
+  GetCreatorLinkedAccounts: "/{service}/user/{creator_id}/links"
+  GetCreatorTags: "/{service}/user/{creator_id}/tags"
+  GetProfile: "/{service}/user/{creator_id}/profile"
+
+Comments:
+  GetPostComments: "/{service}/user/{creator_id}/post/{post_id}/comments"
+
+File:
+  FromHash: "/search_hash/{file_hash}"

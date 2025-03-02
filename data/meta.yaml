@@ -1,0 +1,21 @@
+Author:
+  Name: "N4GR"
+
+  Socials:
+    GitHub: "https://n4gr.uk/github" # Github profile.
+    Discord: "https://n4gr.uk/discord" # Discord community server.
+
+    Donations:
+      PayPal: "https://n4gr.uk/paypal" # Paypal.me
+      Ko-Fi: "https://n4gr.uk/ko-fi" # Ko-Fi profile
+      
+
+Program:
+  Name: "Coomer-Downloader"
+  Version: "2.0"
+  Repository: "https://github.com/N4GR/Coomer-Downloader"
+
+Credits:
+  Icons: "Google" # Used open-source google icons for buttons.
+  Fonts: "CaskaydiaCove" # Used the nerd font version of CaskaydiaCove.
+  API: "coomer.su" # For an amazing API and platform.
