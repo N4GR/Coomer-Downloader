@@ -1,5 +1,8 @@
 from src.imports import *
 
+# Type-hinting.
+from src.window.widgets.terminal import Terminal
+
 class SocialsDisplay(QWidget):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
@@ -90,6 +93,9 @@ class SocialsDisplay(QWidget):
                 self.icon_path = icon_path
                 self.type = type
                 self.args = args
+                
+                # Terminal inside the main_window.
+                self.terminal : Terminal = self.parent().parent().parent().terminal
 
                 self._handle_connection()
                 self._add_design()
@@ -104,12 +110,17 @@ class SocialsDisplay(QWidget):
             
             def _handle_connection(self):
                 def url_click():
+                    self.terminal.add_text(f"Opening URL: {url.url()}")
+                    
                     QDesktopServices.openUrl(url)
                 
                 def message_click():
+                    self.terminal.add_text(f"Opening Crypto window.")
+                    
                     self.message_box = self.MessageBox(
                         fonts = self.fonts,
-                        args = self.args
+                        args = self.args,
+                        terminal = self.terminal
                     ) # Create the message box object.
                 
                     self.message_box.show() # Open the message box.
@@ -126,12 +137,14 @@ class SocialsDisplay(QWidget):
                 def __init__(
                         self,
                         fonts: Fonts,
-                        args: list[dict]
+                        args: list[dict],
+                        terminal: Terminal
                 ):
                     super().__init__()
                     
                     self.fonts = fonts
                     self.args = args
+                    self.terminal = terminal
                     
                     self._add_design()
                     self._add_widgets()
@@ -156,6 +169,11 @@ class SocialsDisplay(QWidget):
                             fonts = self.fonts,
                             wallet = wallet
                         ))
+                
+                def closeEvent(self, event: QEvent):
+                    self.terminal.add_text("Closing Crypto window.")
+                    
+                    event.accept()
                 
                 class Crypto(QWidget):
                     def __init__(self, fonts: Fonts, wallet: dict):

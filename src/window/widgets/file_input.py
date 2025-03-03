@@ -31,6 +31,10 @@ class FileInput(QWidget):
             super().__init__(parent)
             # Setting design of widget.
             self._add_design()
+            
+            self.main_window = self.parent().parent()
+            
+            self.clicked.connect(self._on_click)
 
         def _add_design(self):
             self.setFixedSize(25, 25)
@@ -42,6 +46,15 @@ class FileInput(QWidget):
                 self.width() - 10,
                 self.height() - 10
             ))
+        
+        def _on_click(self):
+            # Open the explorer to retrieve a text file.
+            file_path, _ = QFileDialog.getOpenFileName(self, "Select Text File", "", "Text Files (*.txt)")
+            
+            # If a file is selected, add it to the file_input text and add a terminal log entry.
+            if file_path:
+                self.parent().text_edit.setText(file_path)
+                self.main_window.terminal.add_text(f"Set {file_path} as links document.")
     
     class Label(QLabel):
         def __init__(

@@ -136,7 +136,7 @@ class DownloadCreators(QThread):
             post: Post,
             creator: Creator
     ) -> Post:
-        def download_file(file: File, post: Post,creator: Creator) -> tuple[File, str]:
+        def download_file(file: File, post: Post, creator: Creator) -> tuple[File, str]:
             if self._should_stop:
                 return
             
@@ -146,7 +146,8 @@ class DownloadCreators(QThread):
                 self.output_dir,
                 file,
                 post,
-                creator
+                creator,
+                self._should_stop
             )
             
             return completed_downloader

@@ -31,6 +31,10 @@ class OutputDirectory(QWidget):
             super().__init__(parent)
             # Setting design of widget.
             self._add_design()
+            
+            self.main_window = self.parent().parent()
+            
+            self.clicked.connect(self._on_click)
 
         def _add_design(self):
             self.setFixedSize(25, 25)
@@ -42,6 +46,14 @@ class OutputDirectory(QWidget):
                 self.width() - 10,
                 self.height() - 10
             ))
+        
+        def _on_click(self):
+            dir_name = QFileDialog.getExistingDirectory(self, "Select output directory")
+        
+            # If the directory is selected, add it to the output_directory text input and log it to terminal.
+            if dir_name:
+                self.parent().text_edit.setText(dir_name)
+                self.main_window.terminal.add_text(f"Set {dir_name} as output directory.")
     
     class Label(QLabel):
         def __init__(

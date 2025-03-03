@@ -49,7 +49,8 @@ class Downloader:
         output_dir: str,
         file: File,
         post: Post,
-        creator: Creator
+        creator: Creator,
+        should_stop: bool
     ) -> tuple[File, str, int, Creator]:
         """A function that uses requests to download a file from a creator.
 
@@ -81,16 +82,19 @@ class Downloader:
         # If the file already exists, return file, full_dir and code 1.
         if os.path.exists(file_full_dir):
             return (file, file_full_dir, 1, creator) # Code 1: File already exists.
-
-        def download_chunk(file: BufferedWriter, chunk: bytes):
-            with self.lock:
-                file.write(chunk) # Thread-safe writing.
         
         with requests.get(url, stream = True) as response: # Send GET request for file stream.
             if response.status_code == 200:
                 with open(file_full_dir, "wb") as file: # Open file in byte-write mode.
                     for chunk in response.iter_content(self.chunk_size):
+                        if should_stop is True: # If should stop.
+                            break # Break the for loop.
+                            
                         file.write(chunk)
+                
+                if should_stop is True:
+                    # Delete the half-downloaded file.
+                    os.remove(file_full_dir)
 
                 return (file, file_full_dir, 2, creator)
             

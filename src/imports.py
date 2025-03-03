@@ -34,7 +34,7 @@ from PySide6.QtCore import (
     QMutex, QWaitCondition,
     Qt, QByteArray, QBuffer,
     QIODevice, QMutexLocker,
-    QUrl
+    QUrl, QEvent
 )
 
 # Local imports.
