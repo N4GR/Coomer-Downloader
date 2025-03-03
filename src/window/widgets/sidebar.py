@@ -1,7 +1,4 @@
-from src.window.imports import *
-
-# Local imports.
-from src.shared.funcs import path
+from src.imports import *
 
 class SideBar(QWidget):
     def __init__(

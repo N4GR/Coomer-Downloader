@@ -1,4 +1,7 @@
-from src.network.imports import *
+# RUNS ON ITS OWN.
+
+from datetime import datetime
+import requests
 from src.network.endpoints import Endpoints
 
 endpoints = Endpoints()

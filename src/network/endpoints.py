@@ -1,4 +1,6 @@
-from src.shared.imports import *
+# RUNS ON ITS OWN.
+
+import json
 from src.shared.funcs import path
 
 class Endpoints:

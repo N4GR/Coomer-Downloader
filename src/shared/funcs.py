@@ -1,4 +1,7 @@
-from src.shared.imports import *
+# RUNS ON ITS OWN
+
+import os
+import sys
 
 def path(relative_path: str) -> str:
     """A function to retrieve the path of a relative path; to be used when mode is in window.

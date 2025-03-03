@@ -1,11 +1,6 @@
-from src.window.imports import *
+from src.imports import *
 
-# Local imports.
-from src.shared.funcs import path
-
-from src.window.objects import Fonts
-
-class OutputDirectory(QWidget):
+class FileInput(QWidget):
     def __init__(
             self,
             parent: QWidget
@@ -21,13 +16,13 @@ class OutputDirectory(QWidget):
     
     def _add_design(self):
         self.setFixedSize(350, 75)
-        self.move(450, 100)
+        self.move(100, 100)
     
     def _add_modules(self):
-        self.button = self.Button(self)
         self.label = self.Label(self, self.fonts)
+        self.button = self.Button(self)
         self.text_edit = self.TextEdit(self, self.fonts)
-    
+
     class Button(QPushButton):
         def __init__(
                 self,
@@ -42,7 +37,7 @@ class OutputDirectory(QWidget):
             self.move(0, 25)
             
             # Set icon of start button.
-            self.setIcon(QIcon(path("data/window/assets/buttons/output.png")))
+            self.setIcon(QIcon(path("data/window/assets/buttons/file.png")))
             self.setIconSize(QSize(
                 self.width() - 10,
                 self.height() - 10
@@ -67,10 +62,10 @@ class OutputDirectory(QWidget):
             font.setBold(True)
         
             return font
-        
+
         def _add_design(self):
-            self.setText("Output Directory:")
-            self.setFixedSize(200, 25)
+            self.setText("Links File Input (optional):")
+            self.setFixedSize(250, 25)
             self.setFont(self._get_font())
             self.move(10, 0)
     
@@ -97,7 +92,7 @@ class OutputDirectory(QWidget):
             return font
 
         def _add_design(self):
-            self.setPlaceholderText("Output directory...")
+            self.setPlaceholderText("Links directory...")
             self.setFixedSize(325, 25)
             self.setFont(self._get_font())
             self.move(25, 25)

@@ -1,4 +1,5 @@
-from src.window.imports import *
+# Should be able to run on its own.
+from PySide6.QtGui import QFont, QFontDatabase
 from src.shared.funcs import path
 
 class Fonts:

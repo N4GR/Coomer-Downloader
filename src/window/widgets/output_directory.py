@@ -1,8 +1,6 @@
-from src.window.imports import *
+from src.imports import *
 
-from src.window.objects import Fonts
-
-class LinkInput(QWidget):
+class OutputDirectory(QWidget):
     def __init__(
             self,
             parent: QWidget
@@ -17,12 +15,33 @@ class LinkInput(QWidget):
         self._add_modules()
     
     def _add_design(self):
-        self.setFixedSize(700, 100)
-        self.move(100, 0)
+        self.setFixedSize(350, 75)
+        self.move(450, 100)
     
     def _add_modules(self):
+        self.button = self.Button(self)
         self.label = self.Label(self, self.fonts)
         self.text_edit = self.TextEdit(self, self.fonts)
+    
+    class Button(QPushButton):
+        def __init__(
+                self,
+                parent: QWidget
+        ) -> None:
+            super().__init__(parent)
+            # Setting design of widget.
+            self._add_design()
+
+        def _add_design(self):
+            self.setFixedSize(25, 25)
+            self.move(0, 25)
+            
+            # Set icon of start button.
+            self.setIcon(QIcon(path("data/window/assets/buttons/output.png")))
+            self.setIconSize(QSize(
+                self.width() - 10,
+                self.height() - 10
+            ))
     
     class Label(QLabel):
         def __init__(
@@ -33,7 +52,7 @@ class LinkInput(QWidget):
             super().__init__(parent)
             self.fonts = fonts
             
-            # Adding design to widget.
+            # Setting design of widget.
             self._add_design()
         
         def _get_font(self) -> QFont:
@@ -45,12 +64,12 @@ class LinkInput(QWidget):
             return font
         
         def _add_design(self):
-            self.setText("Links Input (optional):") # Add label text.
-            self.setFixedSize(250, 25)
+            self.setText("Output Directory:")
+            self.setFixedSize(200, 25)
             self.setFont(self._get_font())
-            self.move(10, 0) # Move to top left of widget.
+            self.move(10, 0)
     
-    class TextEdit(QTextEdit):
+    class TextEdit(QLineEdit):
         def __init__(
                 self,
                 parent: QWidget,
@@ -59,9 +78,10 @@ class LinkInput(QWidget):
             super().__init__(parent)
             self.fonts = fonts
             
-            # Adding design to widget.
+            # Setting design of widget.
             self._add_design()
-            
+
+            # Add TextEdit attributes to the widget.
             self._add_attributes()
         
         def _get_font(self) -> QFont:
@@ -70,12 +90,12 @@ class LinkInput(QWidget):
             font.setStyleHint(QFont.StyleHint.Monospace)
         
             return font
-        
+
         def _add_design(self):
-            self.setPlaceholderText("Add links seperated by a ','")
-            self.setFixedSize(700, 75)
+            self.setPlaceholderText("Output directory...")
+            self.setFixedSize(325, 25)
             self.setFont(self._get_font())
-            self.move(0, 25)
+            self.move(25, 25)
         
         def _add_attributes(self):
-            self.setAcceptRichText(False)
+            self.setReadOnly(True) # Input not allowed.

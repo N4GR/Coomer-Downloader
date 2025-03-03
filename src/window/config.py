@@ -1,5 +1,3 @@
-from src.window.imports import *
-
 class Widget:
     def __init__(
             self,

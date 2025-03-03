@@ -1,10 +1,7 @@
-from src.window.imports import *
+from src.imports import *
 
 # Local imports.
-from src.network.api import Profile
 from src.network.downloader import get_pixmap_from_url
-
-from src.window.objects import Fonts
 
 class AvatarDisplay(QWidget):
     def __init__(

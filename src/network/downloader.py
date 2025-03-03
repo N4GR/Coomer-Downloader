@@ -1,16 +1,4 @@
-from src.network.imports import *
-
-# Local imports.
-from src.network.api import (
-    File, Creator, Post
-)
-
-from src.network.endpoints import Endpoints
-
-# For handling PySide requests.
-from src.window.imports import (
-    QBuffer, QByteArray, QPixmap, QIODevice
-)
+from src.imports import *
 
 codes = {
     1: "File exists.",

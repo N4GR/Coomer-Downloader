@@ -1,5 +1,4 @@
-from src.shared.imports import *
-from src.window.imports import QApplication
+from src.imports import QApplication
 from src.window.main_window import MainWindow
 
 class Main:

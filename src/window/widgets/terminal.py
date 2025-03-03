@@ -1,7 +1,4 @@
-from src.window.imports import * 
-
-from src.shared.funcs import path
-from src.window.objects import Fonts
+from src.imports import *
 
 class Terminal(QPlainTextEdit):
     def __init__(

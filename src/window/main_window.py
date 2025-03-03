@@ -1,21 +1,10 @@
-from src.window.imports import *
+from src.imports import *
 
 # Local imports.
-from src.shared.funcs import path
 from src.window.download_creators import DownloadCreators
 
 # Widgets.
-from src.window.sidebar import SideBar
-from src.window.terminal import Terminal
-from src.window.link_input import LinkInput
-from src.window.file_input import FileInput
-from src.window.output_directory import OutputDirectory
-from src.window.avatar_display import AvatarDisplay
-from src.window.socials_display import SocialsDisplay
-
-from src.network.api import (
-    Creator, Profile
-)
+from src.window.widgets.init import *
 
 class MainWindow(QWidget):
     def __init__(
