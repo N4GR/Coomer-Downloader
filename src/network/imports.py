@@ -7,4 +7,3 @@ from io import BufferedWriter
 
 # Third-party imports.
 import requests
-import yaml

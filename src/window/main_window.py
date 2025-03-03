@@ -11,6 +11,7 @@ from src.window.link_input import LinkInput
 from src.window.file_input import FileInput
 from src.window.output_directory import OutputDirectory
 from src.window.avatar_display import AvatarDisplay
+from src.window.socials_display import SocialsDisplay
 
 from src.network.api import (
     Creator, Profile
@@ -49,6 +50,7 @@ class MainWindow(QWidget):
         self.file_input = FileInput(self)
         self.output_directory = OutputDirectory(self)
         self.avatar_display = AvatarDisplay(self)
+        self.socials_display = SocialsDisplay(self)
         
         self._add_widget_connections()
     

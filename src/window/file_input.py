@@ -70,7 +70,7 @@ class FileInput(QWidget):
 
         def _add_design(self):
             self.setText("Links File Input (optional):")
-            self.setFixedSize(200, 25)
+            self.setFixedSize(250, 25)
             self.setFont(self._get_font())
             self.move(10, 0)
     

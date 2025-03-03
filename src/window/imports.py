@@ -15,12 +15,14 @@ from PySide6.QtWidgets import (
 
 from PySide6.QtGui import (
     QPixmap, QIcon, QPainter,
-    QFont, QFontDatabase
+    QFont, QFontDatabase,
+    QDesktopServices
 )
 
 from PySide6.QtCore import (
     QSize, QThread, Signal,
     QMutex, QWaitCondition,
     Qt, QByteArray, QBuffer,
-    QIODevice, QMutexLocker
+    QIODevice, QMutexLocker,
+    QUrl
 )
