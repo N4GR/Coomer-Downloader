@@ -201,6 +201,19 @@ class MainWindow(QWidget):
             
             return fixed_links
         
+        # Check if the download worker is already running or not.
+        try:
+            if self.download_worker is not None:
+                # Disable the start button until the download worker is fully closed.
+                self.side_bar.start_button.setEnabled(False)
+                
+                self.download_worker.stop() # Stop it if it's a valid attribute.
+
+                return # Stop processes.
+                        
+        except AttributeError: # This means that the downloader isn't present.
+            pass
+        
         if check_output_directory() is False: return
         if check_inputted_links() is False: return
         
@@ -237,6 +250,9 @@ class MainWindow(QWidget):
             self.enable_interactions() # Re-enable all interactions.
             return
         
+        # Set start button to a stop button icon.
+        self.side_bar.start_button.set_to_stop()
+        
         self.start_links_download(links) # Start the creator threads to get creators.
     
     def start_links_download(self, links: list[str]):
@@ -244,9 +260,19 @@ class MainWindow(QWidget):
             self.terminal.add_text(result)
         
         def on_complete(result: list[str]) -> None:
-            self.terminal.add_text(f"PROCESSES COMPLETE | {len(result)} creators.")
+            self.terminal.add_text("PROCESSING ENDED")
             
             self.enable_interactions()
+        
+        def on_finished() -> None:
+            "When the download worker is killed."
+            self.download_worker = None # Erase the download manager QThread.
+            
+            self.avatar_display.reset_display() # Reset the avatar display.
+            
+            # Re-enable start button.
+            self.side_bar.start_button.setEnabled(True)
+            self.side_bar.start_button.set_to_start() # Reset the icon.
         
         def on_avatar(result: Profile) -> None:
             self.avatar_display.add_avatar(result) # Add creator to display.
@@ -265,13 +291,12 @@ class MainWindow(QWidget):
         self.download_worker.avatar_signal.connect(on_avatar)
         self.download_worker.file_signal.connect(on_file_complete)
         
+        self.download_worker.finished.connect(on_finished)
+        
         self.download_worker.start()
     
     def enable_interactions(self):
         """A function that will set all interactions to enabled."""
-        self.side_bar.start_button.setEnabled(True)
-        self.terminal.add_text("ENABLE | Start button.")
-        
         self.link_input.text_edit.setEnabled(True)
         self.terminal.add_text("ENABLE | Link inputs.")
         
@@ -283,9 +308,6 @@ class MainWindow(QWidget):
     
     def disable_interactions(self):
         """A function to halt all interactions with configurations while the start process is being handled."""
-        self.side_bar.start_button.setDisabled(True)
-        self.terminal.add_text("DISABLE | Start button.")
-        
         self.link_input.text_edit.setDisabled(True)
         self.terminal.add_text("DISABLE | Link inputs.")
         

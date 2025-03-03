@@ -1,6 +1,8 @@
 from src.network.imports import *
+from src.network.endpoints import Endpoints
 
-coomer_api_url = "https://coomer.su/api/v1"
+endpoints = Endpoints()
+coomer_api_url = endpoints.servers.coomer.api
 
 class File:
     def __init__(
@@ -56,15 +58,18 @@ class Profile:
         self.indexed : str = data["indexed"]
         self.updated : str = data["updated"]
         
-        self.image : str = f"https://img.coomer.su/icons/{self.service}/{self.id}"
-        self.banner : str = f"https://img.coomer.su/banners/{self.service}/{self.id}"
+        self.image : str = endpoints.servers.coomer.icon.replace("{service}", self.service).replace("{creator_id}", self.id)
+        self.banner : str = endpoints.servers.coomer.banner.replace("{service}", self.service).replace("{creator_id}", self.id)
     
     def _get_profile_data(self) -> dict:
         service = self.url.split("/")[-3] # https://coomer.su/onlyfans/user/belledelphine -> onlyfans
         id = self.url.split("/")[-1] # https://coomer.su/onlyfans/user/belledelphine -> belledelphine
         
+        url = endpoints.servers.coomer.api + endpoints.creator.profile.replace("{service}", service).replace("{creator_id}", id)
+        
+        print(url)
         # Send a GET request to obtain the profile data.
-        with requests.get(f"{coomer_api_url}/{service}/user/{id}/profile") as response:
+        with requests.get(url) as response:
             if response.status_code == 200:
                 return response.json()
             
@@ -87,7 +92,7 @@ class Creator(Profile):
         step_count = 50 # Enforced by API.
         current_step = 0 # Step storage.
         
-        url = f"{coomer_api_url}/{self.service}/user/{self.id}"
+        url = endpoints.servers.coomer.api + endpoints.creator.posts.replace("{service}", self.service).replace("{creator_id}", self.id)
         
         pages : list[dict] = [] # Page storage.
         while True:

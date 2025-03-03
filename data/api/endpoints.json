@@ -1,0 +1,34 @@
+{
+    "servers": {
+        "coomer": {
+            "api": "https://coomer.su/api/v1",
+            "download": "https://n1.coomer.su/data/{file_path}",
+            "icon": "https://img.coomer.su/icons/{service}/{creator_id}",
+            "banner": "https://img.coomer.su/banners/{service}/{creator_id}"
+        },
+
+        "kemono": {
+            "api": "https://kemono.su/api/v1",
+            "download": "",
+            "icon": "",
+            "banner": ""
+        }
+    },
+
+    "creator": {
+        "posts": "/{service}/user/{creator_id}",
+        "tags": "/{service}/user/{creator_id}/tags",
+        "profile": "/{service}/user/{creator_id}/profile",
+        "accounts": "/{service}/user/{creator_id}/links",
+        "fancards": "/{service}/user/{creator_id}/fancards",
+        "announcements": "/{service}/user/{creator_id}/announcements",
+
+        "post": {
+            "from_id": "/{service}/user/{creator_id}/post/{post_id}",
+            "revisions": "/{service}/user/{creator_id}/post/{post_id}/revisions",
+            "comments": "/{service}/user/{creator_id}/post/{post_id}/comments"
+        },
+
+        "file": "/search_hash/{file_hash}"
+    }
+}

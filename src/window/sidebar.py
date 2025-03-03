@@ -37,7 +37,14 @@ class SideBar(QWidget):
             self.setFixedSize(100, 600) # Assigning size to label.
             self.setStyleSheet(f"background-color: rgb(47, 47, 47)") # Assigning background colour to label.
 
-            self.setPixmap(QPixmap("data/window/assets/window/mascot.png")) # Add the mascot image to the background label.
+            # Select a random mascot from the provided images.
+            mascot = random.choice([
+                path("data/window/assets/window/mascots/") + mascot
+                for mascot
+                in os.listdir(path("data/window/assets/window/mascots"))
+            ])
+            
+            self.setPixmap(QPixmap(mascot)) # Add the mascot image to the background label.
             
     class StartButton(QPushButton):
         def __init__(
@@ -54,8 +61,17 @@ class SideBar(QWidget):
             # Make the button rounded.
             self.setStyleSheet("border-radius: 30px")
             
-            # Set icon of start button.
+            self.set_to_start()
+        
+        def set_to_start(self):
             self.setIcon(QIcon(path("data/window/assets/buttons/start.png")))
+            self.setIconSize(QSize(
+                self.parentWidget().width() - 50,
+                self.parentWidget().height() - 50
+            ))
+        
+        def set_to_stop(self):
+            self.setIcon(QIcon(path("data/window/assets/buttons/stop.png")))
             self.setIconSize(QSize(
                 self.parentWidget().width() - 50,
                 self.parentWidget().height() - 50

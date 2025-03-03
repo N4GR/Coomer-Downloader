@@ -5,6 +5,8 @@ from src.network.api import (
     File, Creator, Post
 )
 
+from src.network.endpoints import Endpoints
+
 # For handling PySide requests.
 from src.window.imports import (
     QBuffer, QByteArray, QPixmap, QIODevice
@@ -19,6 +21,10 @@ codes = {
 
 class Downloader:
     def __init__(self):
+        self.endpoints = Endpoints() # Load endpoints object.
+        
+        self.lock = threading.Lock()
+        
         self.chunk_size = 8192
 
     def get_month_name(
@@ -68,12 +74,17 @@ class Downloader:
         Returns:
             tuple (File, str): File and output_dir of the downloaded file.
         """
-        
+
+        # {output_dir}/BelleDelphine [onlyfans]
         creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
+        
+        # {output_dir}/BelleDelphine [onlyfans]/2025/01
         file_dir = f"{creator_dir}/{post.published.year}/{self.get_month_name(post.published.month)}"
+        
+        # {output_dir}/BelleDelphine [onlyfans]/2025/01/file.png
         file_full_dir = f"{file_dir}/{file.name}"
         
-        url = f"https://n1.coomer.su/data{file.path}"
+        url = self.endpoints.servers.coomer.download.replace("{file_path}", file.path)
         
         # Create the directories leading towards the output_dir.
         if not os.path.exists(file_dir):
@@ -82,32 +93,34 @@ class Downloader:
         # If the file already exists, return file, full_dir and code 1.
         if os.path.exists(file_full_dir):
             return (file, file_full_dir, 1, creator) # Code 1: File already exists.
+
+        def download_chunk(file: BufferedWriter, chunk: bytes):
+            with self.lock:
+                file.write(chunk) # Thread-safe writing.
         
-        # Send a GET request to retrieve the stream of a file.
-        with requests.get(url, stream = True) as response:
-            # Check if the request is successful.
+        with requests.get(url, stream = True) as response: # Send GET request for file stream.
             if response.status_code == 200:
-                # Open destination in binar-write mode.
-                with open(file_full_dir, "wb") as file:
-                    # Iterate over each chunk, writing it to file.
-                    for chunk in response.iter_content(chunk_size = self.chunk_size):
-                        file.write(chunk)
-        
-                return (file, file_full_dir, 2, creator) # Code 2: Success.
+                with open(file_full_dir, "wb") as file: # Open file in byte-write mode.
+                    with ThreadPoolExecutor(max_workers = 4) as executor: # Create a thread pool to download chunks.
+                        for chunk in response.iter_content(self.chunk_size):
+                            executor.submit(download_chunk, file, chunk) # Downloads each chunk in threads.
+
+                return (file, file_full_dir, 2, creator)
             
             else:
-                print(f"{url} FAILED {response.status_code}")
+                return (file, file_full_dir, 4, creator)
                 
-                return (file, file_full_dir, 3, creator) # Code 3: Request denied.
-        
-        return (file, file_full_dir, 4, creator) # Code 4: Failed request.
+        return (file, file_full_dir, 3, creator)
 
     def download_profile(
             self,
             output_dir: str,
             creator: Creator
     ):
+        # {output_dir}/BelleDelphine [onlyfans]
         creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
+        
+        # {output_dir}/BelleDelphine [onlyfans]/profile.png
         profile_dir = f"{creator_dir}/profile.png"
         
         # Create the path to creator_dir if it doesn't exist.
@@ -131,7 +144,10 @@ class Downloader:
             output_dir: str,
             creator: Creator
     ):
+        # {output_dir}/BelleDelphine [onlyfans]
         creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
+        
+        # {output_dir}/BelleDelphine [onlyfans]/banner.png
         profile_dir = f"{creator_dir}/banner.png"
         
         # Create the path to creator_dir if it doesn't exist.

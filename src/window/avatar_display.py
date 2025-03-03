@@ -61,6 +61,23 @@ class AvatarDisplay(QWidget):
         
         # Add 1 to column.
         self.col += 1
+
+    def reset_values(self):
+        """A function to reset all values once the avatars are deleted."""
+        self.row = 0
+        self.col = 0
+    
+    def reset_display(self):
+        """A function that will reset the avatar display, removing any present avatars."""
+        self.row = 0
+        self.col = 0
+        
+        # Iterate over items in avatar display and delete the avatars.
+        while self.grid_layout.count():
+            item = self.grid_layout.takeAt(0)
+            
+            if item.widget():
+                item.widget().deleteLater() # Delete widget.
     
     def set_avatar_file_count(
         self,
@@ -137,7 +154,7 @@ class Avatar(QWidget):
         
         def _get_font(self) -> QFont:
             font = self.fonts.caskaydia.bold
-            font.setPointSize(10) # Set size to 10.
+            font.setPointSize(8) # Set size to 10.
             font.setStyleHint(QFont.StyleHint.Monospace)
             font.setBold(True)
         

@@ -22,5 +22,5 @@ from PySide6.QtCore import (
     QSize, QThread, Signal,
     QMutex, QWaitCondition,
     Qt, QByteArray, QBuffer,
-    QIODevice
+    QIODevice, QMutexLocker
 )
