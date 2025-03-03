@@ -60,49 +60,48 @@ class DownloadCreators(QThread):
             self,
             links: list[str]
     ) -> None:
-        while not self._should_stop:
-            for link in links:
-                if self._should_stop: # Exit early.
-                    return
-                
-                # Reset column if multiple of max_row.
-                if self.column % self.max_column == 0:
-                    self.row += 1 # Add another row.
-                    self.column = 0 # Reset column to 0.
-                
-                self.terminal_signal.emit(f"GETTING POSTS | {link}")
-                creator = Creator(url = link) # Gets creator object from URL.
-                
-                creator_dir = f"{self.output_dir}/{creator.name} [{creator.service}]"
-                
-                # Check if the banner exists.
-                banner_dir = f"{creator_dir}/banner.png"
+        for link in links:
+            if self._should_stop: # Exit early.
+                return
+            
+            # Reset column if multiple of max_row.
+            if self.column % self.max_column == 0:
+                self.row += 1 # Add another row.
+                self.column = 0 # Reset column to 0.
+            
+            self.terminal_signal.emit(f"GETTING POSTS | {link}")
+            creator = Creator(url = link) # Gets creator object from URL.
+            
+            creator_dir = f"{self.output_dir}/{creator.name} [{creator.service}]"
+            
+            # Check if the banner exists.
+            banner_dir = f"{creator_dir}/banner.png"
 
-                if os.path.exists(banner_dir):
-                    self.terminal_signal.emit(f"BANNER | Present, skipping: {creator.banner}")
-                    
-                else: # If it doesn't download it.
-                    self.downloader.download_banner(self.output_dir, creator)
-                    self.terminal_signal.emit(f"BANNER | Downloaded: {creator.banner}")
+            if os.path.exists(banner_dir):
+                self.terminal_signal.emit(f"BANNER | Present, skipping: {creator.banner}")
                 
-                # Check if the profile exists.
-                profile_dir = f"{creator_dir}/profile.png"
-                
-                if os.path.exists(profile_dir):
-                    self.terminal_signal.emit(f"PROFILE | Present, skipping: {creator.image}")
-                
-                else: # If it doesn't, download it.
-                    self.downloader.download_profile(self.output_dir, creator)
-                    self.terminal_signal.emit(f"PRFOFILE | Downloaded: {creator.image}")
+            else: # If it doesn't download it.
+                self.downloader.download_banner(self.output_dir, creator)
+                self.terminal_signal.emit(f"BANNER | Downloaded: {creator.banner}")
+            
+            # Check if the profile exists.
+            profile_dir = f"{creator_dir}/profile.png"
+            
+            if os.path.exists(profile_dir):
+                self.terminal_signal.emit(f"PROFILE | Present, skipping: {creator.image}")
+            
+            else: # If it doesn't, download it.
+                self.downloader.download_profile(self.output_dir, creator)
+                self.terminal_signal.emit(f"PRFOFILE | Downloaded: {creator.image}")
 
-                # Emit found posts to terminal.
-                self.terminal_signal.emit(f"FOUND POSTS | {len(creator.posts)} valid posts.")
+            # Emit found posts to terminal.
+            self.terminal_signal.emit(f"FOUND POSTS | {len(creator.posts)} valid posts.")
 
-                self.download_posts(creator) # Send the creator to the posts threading to download posts.
-                
-                self.column += 1 # Add 1 to column for next avatar display.
-                self.completed_files = 0 # Reset value.
-                self.completed_posts = 0 # Reset value.
+            self.download_posts(creator) # Send the creator to the posts threading to download posts.
+            
+            self.column += 1 # Add 1 to column for next avatar display.
+            self.completed_files = 0 # Reset value.
+            self.completed_posts = 0 # Reset value.
 
     def download_posts(
             self,
