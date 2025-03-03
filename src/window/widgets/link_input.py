@@ -59,8 +59,15 @@ class LinkInput(QWidget):
             
             # Adding design to widget.
             self._add_design()
-            
             self._add_attributes()
+        
+        def _load_history(self) -> str:
+            with open("data/history.json", "r", encoding = "utf-8") as file:
+                data = json.load(file)
+            
+            links = ", ".join(data["links"])
+            
+            return links
         
         def _get_font(self) -> QFont:
             font = self.fonts.caskaydia.bold
@@ -71,6 +78,9 @@ class LinkInput(QWidget):
         
         def _add_design(self):
             self.setPlaceholderText("Add links seperated by a ','")
+            
+            self.setText(self._load_history())
+            
             self.setFixedSize(700, 75)
             self.setFont(self._get_font())
             self.move(0, 25)

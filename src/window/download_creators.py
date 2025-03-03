@@ -124,19 +124,19 @@ class DownloadCreators(QThread):
         
         # Create a thread for each post, executing a max workers to the thread.
         with ThreadPoolExecutor(max_workers = 4) as executor: # Download posts simultaenously.
-                for post in creator.posts:
-                    if self._should_stop: # Exit early.
-                        return
-                    
-                    future = executor.submit(self.download_post, post, creator)
-                    future.add_done_callback(on_post_complete)    
-                    
+            for post in creator.posts:
+                if self._should_stop: # Exit early.
+                    return
+                
+                future = executor.submit(self.download_post, post, creator)
+                future.add_done_callback(on_post_complete)
+           
     def download_post(
             self,
             post: Post,
             creator: Creator
     ) -> Post:
-        def download_file(file: File, post: Post, creator: Creator) -> tuple[File, str]:
+        def download_file(file: File, post: Post, creator: Creator, should_stop: bool) -> tuple[File, str]:
             if self._should_stop:
                 return
             
@@ -147,7 +147,7 @@ class DownloadCreators(QThread):
                 file,
                 post,
                 creator,
-                self._should_stop
+                should_stop
             )
             
             return completed_downloader
@@ -187,12 +187,12 @@ class DownloadCreators(QThread):
         # Create a thread for each file in post, the max workers concurrently working set.
         with ThreadPoolExecutor(max_workers = 10) as executor:
             for file in post.files:
+                future = executor.submit(download_file, file, post, creator, self._should_stop) # Submit the download_file thread to be worked.
+                future.add_done_callback(on_file_complete) # Add onto completed_files when a file completes downloading.
+
                 if self._should_stop:
                     return
-                
-                future = executor.submit(download_file, file, post, creator) # Submit the download_file thread to be worked.
-                future.add_done_callback(on_file_complete) # Add onto completed_files when a file completes downloading.
-        
+
         return post
     
     def stop(self):

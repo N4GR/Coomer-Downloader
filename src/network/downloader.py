@@ -63,7 +63,7 @@ class Downloader:
         Returns:
             tuple (File, str): File and output_dir of the downloaded file.
         """
-
+        
         # {output_dir}/BelleDelphine [onlyfans]
         creator_dir = f"{output_dir}/{creator.name} [{creator.service}]"
         

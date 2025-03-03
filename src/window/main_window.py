@@ -12,6 +12,7 @@ class MainWindow(QWidget):
     ) -> None:
         super().__init__()
         self._create_req_dirs()
+        self._create_req_json()
         
         # Setting design of window.
         self._add_design()
@@ -31,10 +32,25 @@ class MainWindow(QWidget):
         for dir in required_dirs:
             os.makedirs(dir, exist_ok = True)
     
+    def _create_req_json(self):
+        """A function to create any required files used by the program (links history, ect.)"""
+        def create_history():
+            history_path = "data/history.json"
+            
+            history_dict = {
+                "links": []
+            }
+            
+            if not os.path.isfile(history_path):
+                with open(history_path, "w", encoding = "utf-8") as file:
+                    json.dump(history_dict, file, indent = 4)
+        
+        create_history()
+        
     def _add_design(self):
         """A function to add design to the QWidget."""
         self.setFixedSize(1500, 600) # Sets the window to a fixed width and height.
-        self.setWindowTitle("N4GR - Coomer-Downloader") # Set the window title.
+        self.setWindowTitle("Coomer-Downloader") # Set the window title.
     
         self.setStyleSheet("background-color: rgb(33, 33, 33)") # Assigning background colour to main window.
     

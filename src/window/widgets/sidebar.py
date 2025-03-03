@@ -78,6 +78,20 @@ class SideBar(QWidget):
                 self.parentWidget().height() - 50
             ))
         
+        def _save_history(self, links: list[str]):
+            """A function to write the links to the history.json file."""
+            with open("data/history.json", "r+", encoding = "utf-8") as file:
+                data = json.load(file) # Get the current data in the json.
+                data["links"] = links # Set the dictionary links to have the new list.
+                
+                # Move the pointer back to beginning.
+                file.seek(0)
+                
+                # Remove any data left over.
+                file.truncate()
+                
+                json.dump(data, file, indent = 4) # Dump the editted data to the json file.
+
         def _on_click(self):
             def check_output_directory() -> bool:
                 """A function that will check an output directory - returning False if it failed.
@@ -257,4 +271,5 @@ class SideBar(QWidget):
             # Set start button to a stop button icon.
             self.set_to_stop()
             
+            self._save_history(links) # Save links to history.json file.
             self.main_window.start_links_download(links) # Start the creator threads to get creators.
