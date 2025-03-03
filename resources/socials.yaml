@@ -1,0 +1,43 @@
+- name: Discord
+  icon_file_name: discord.png
+  type: link
+  args:
+    link: https://n4gr.uk/discord
+
+- name: Githhub
+  icon_file_name: github.png
+  type: link
+  args:
+    link: https://n4gr.uk/github
+
+- name: KoFi
+  icon_file_name: kofi.png
+  type: link
+  args:
+    link: https://n4gr.uk/ko-fi
+
+- name: YouTube
+  icon_file_name: youtube.png
+  type: link
+  args:
+    link: https://n4gr.uk/youtube
+
+- name: Cryto
+  icon_file_name: crypto.png
+  type: info
+  args:
+    - name: Bitcoin
+      icon_file_name: bitcoin.png
+      wallet_address: "bc1qm689zggn90zj7d40yp7m4x4ag9h3hltdmnk652"
+    
+    - name: Ethereum
+      icon_file_name: ethereum.png
+      wallet_address: "0xD3F0AF24F9F842888949cd1D23798BcE04756B68"
+    
+    - name: Solana
+      icon_file_name: solana.png
+      wallet_address: "36F1m1bJUQJmtQY6a9zBusvb5G7gjt5axnGrdgy6jZFS"
+    
+    - name: Doge
+      icon_file_name: doge.png
+      wallet_address: "DQr3jrEpJPh4JZmYV5Xe2rZSuN9DyVBWq9"

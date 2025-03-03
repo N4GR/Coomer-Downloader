@@ -1,7 +1,7 @@
 # RUNS ON ITS OWN.
 
 import json
-from src.shared.funcs import path
+from src.funcs import path
 
 class Endpoints:
     def __init__(self):
@@ -11,7 +11,7 @@ class Endpoints:
         self.creator = self.Creator(data["creator"])
     
     def _get_data(self) -> dict:
-        with open(path("data/api/endpoints.json"), "r", encoding = "utf-8") as file:
+        with open(path("resources/api/endpoints.json"), "r", encoding = "utf-8") as file:
             return json.load(file)
     
     class Servers:

@@ -29,7 +29,7 @@ class MainWindow(QWidget):
     
         self.setStyleSheet("background-color: rgb(33, 33, 33)") # Assigning background colour to main window.
     
-        self.setWindowIcon(QIcon(path("data/window/assets/window/icon.png"))) # Set the window icon.
+        self.setWindowIcon(QIcon(path("resources/window/assets/window/icon.png"))) # Set the window icon.
     
     def _initialise_widgets(self):
         """A function to initialise all widgets assosciated with the main window; side bar, ect."""

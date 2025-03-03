@@ -38,8 +38,7 @@ from PySide6.QtCore import (
 )
 
 # Local imports.
-from src.shared.funcs import *
+from src.funcs import *
 from src.window.objects import *
-from src.window.config import *
 from src.network.endpoints import *
 from src.network.api import *

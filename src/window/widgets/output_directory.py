@@ -37,7 +37,7 @@ class OutputDirectory(QWidget):
             self.move(0, 25)
             
             # Set icon of start button.
-            self.setIcon(QIcon(path("data/window/assets/buttons/output.png")))
+            self.setIcon(QIcon(path("resources/window/assets/buttons/output.png")))
             self.setIconSize(QSize(
                 self.width() - 10,
                 self.height() - 10

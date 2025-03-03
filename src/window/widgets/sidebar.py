@@ -36,9 +36,9 @@ class SideBar(QWidget):
 
             # Select a random mascot from the provided images.
             mascot = random.choice([
-                path("data/window/assets/window/mascots/") + mascot
+                path("resources/window/assets/window/mascots/") + mascot
                 for mascot
-                in os.listdir(path("data/window/assets/window/mascots"))
+                in os.listdir(path("resources/window/assets/window/mascots"))
             ])
             
             self.setPixmap(QPixmap(mascot)) # Add the mascot image to the background label.
@@ -61,14 +61,14 @@ class SideBar(QWidget):
             self.set_to_start()
         
         def set_to_start(self):
-            self.setIcon(QIcon(path("data/window/assets/buttons/start.png")))
+            self.setIcon(QIcon(path("resources/window/assets/buttons/start.png")))
             self.setIconSize(QSize(
                 self.parentWidget().width() - 50,
                 self.parentWidget().height() - 50
             ))
         
         def set_to_stop(self):
-            self.setIcon(QIcon(path("data/window/assets/buttons/stop.png")))
+            self.setIcon(QIcon(path("resources/window/assets/buttons/stop.png")))
             self.setIconSize(QSize(
                 self.parentWidget().width() - 50,
                 self.parentWidget().height() - 50

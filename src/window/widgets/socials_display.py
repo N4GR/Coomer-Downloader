@@ -18,47 +18,27 @@ class SocialsDisplay(QWidget):
         
         self.setLayout(self.box_layout)
     
-    def _add_widgets(self):
-        def _add_to_grid():
-            self.box_layout.addWidget(self.discord)
-            self.box_layout.addWidget(self.github)
-            self.box_layout.addWidget(self.kofi)
-            self.box_layout.addWidget(self.youtube)
-        
-        self.discord = self.Social(
-            parent = self,
-            fonts = self.fonts,
-            icon_path = path("data/window/assets/buttons/socials/discord.png"),
-            name = "Discord",
-            link = "https://n4gr.uk/discord",
-        )
-        
-        self.github = self.Social(
-            parent = self,
-            fonts = self.fonts,
-            icon_path = path("data/window/assets/buttons/socials/github.png"),
-            name = "GitHub",
-            link = "https://n4gr.uk/github"
-        )
-        
-        self.kofi = self.Social(
-            parent = self,
-            fonts = self.fonts,
-            icon_path = path("data/window/assets/buttons/socials/kofi.png"),
-            name = "KoFi",
-            link = "https://n4gr.uk/ko-fi"
-        )
-        
-        self.youtube = self.Social(
-            parent = self,
-            fonts = self.fonts,
-            icon_path = path("data/window/assets/buttons/socials/youtube.png"),
-            name = "YouTube",
-            link = "https://n4gr.uk/youtube"
-        )
-        
-        _add_to_grid()
+    def _get_socials(self) -> list[dict]:
+        with open(path("resources/socials.yaml"), mode = "r", encoding = "utf-8") as file:
+            return yaml.safe_load(file)
     
+    def _add_widgets(self): 
+        social_icon_path = path("resources/window/assets/buttons/socials")
+        
+        # For every social in the socials data, create a socials button.
+        for social in self._get_socials():
+            social_widget = self.Social(
+                parent = self,
+                fonts = self.fonts,
+                icon_path = f"{social_icon_path}/{social['icon_file_name']}",
+                name = social["name"],
+                type = social["type"],
+                args = social["args"]
+            ) # Create the social object.
+            
+            # Add the object to the layout.
+            self.box_layout.addWidget(social_widget)
+
     class Social(QWidget):
         def __init__(
                 self,
@@ -66,27 +46,29 @@ class SocialsDisplay(QWidget):
                 fonts: Fonts,
                 icon_path: str,
                 name: str,
-                link: str
+                type: str,
+                args: dict
         ):
             super().__init__(parent)
 
             self.fonts = fonts
             self.icon_path = icon_path
             self.name = name
-            self.link = link
+            self.type = type
+            self.args = args
             
             self._add_design()
-            self._add_widgets()
+            
+            self.button = self.Button(
+                parent = self,
+                fonts = self.fonts,
+                icon_path = self.icon_path,
+                type = self.type,
+                args = self.args
+            )
         
         def _add_design(self):
             self.setFixedSize(64, 84)
-        
-        def _add_widgets(self):
-            self.button = self.Button(
-                parent = self,
-                icon_path = self.icon_path,
-                link = self.link
-            )
             
             self.label = self.Label(
                 parent = self,
@@ -98,15 +80,19 @@ class SocialsDisplay(QWidget):
             def __init__(
                     self,
                     parent: QWidget,
+                    fonts: Fonts,
                     icon_path: str,
-                    link: str
+                    type: str,
+                    args: dict
             ):
                 super().__init__(parent)
+                self.fonts = fonts
                 self.icon_path = icon_path
-                self.link = QUrl(link)
-                
+                self.type = type
+                self.args = args
+
+                self._handle_connection()
                 self._add_design()
-                self._add_connections()
                 
             def _add_design(self):
                 self.setFixedSize(64, 64)
@@ -116,12 +102,159 @@ class SocialsDisplay(QWidget):
                 self.setIcon(QPixmap(self.icon_path).scaled(icon_size))
                 self.setIconSize(icon_size)
             
-            def _add_connections(self):
-                self.clicked.connect(self._on_click)
+            def _handle_connection(self):
+                def url_click():
+                    QDesktopServices.openUrl(url)
+                
+                def message_click():
+                    self.message_box = self.MessageBox(
+                        fonts = self.fonts,
+                        args = self.args
+                    ) # Create the message box object.
+                
+                    self.message_box.show() # Open the message box.
+
+                if self.type == "link": # Add a link opening function.
+                    url = QUrl(self.args["link"])
+                    
+                    self.clicked.connect(url_click)
+                
+                elif self.type == "info": # Open a message box on click for info.
+                    self.clicked.connect(message_click)
             
-            def _on_click(self):
-                QDesktopServices.openUrl(self.link)
-        
+            class MessageBox(QWidget):
+                def __init__(
+                        self,
+                        fonts: Fonts,
+                        args: list[dict]
+                ):
+                    super().__init__()
+                    
+                    self.fonts = fonts
+                    self.args = args
+                    
+                    self._add_design()
+                    self._add_widgets()
+                    
+                def _add_design(self):
+                    self.setFixedSize(300, 600)
+                    
+                    self.setWindowTitle("Crypto Addresses")
+                    
+                    self.box_layout = QVBoxLayout(self)
+                    self.box_layout.setSpacing(0)
+                    self.box_layout.setContentsMargins(0, 0, 0, 0)
+                    
+                    self.setLayout(self.box_layout)
+                    
+                    # Set window icon.
+                    self.setWindowIcon(QIcon(path("resources/window/assets/window/icon.png")))
+                
+                def _add_widgets(self):
+                    for wallet in self.args:
+                        self.box_layout.addWidget(self.Crypto(
+                            fonts = self.fonts,
+                            wallet = wallet
+                        ))
+                
+                class Crypto(QWidget):
+                    def __init__(self, fonts: Fonts, wallet: dict):
+                        super().__init__()
+                        self.fonts = fonts
+                        self.wallet = wallet
+                    
+                        self._add_design()
+                        self._add_widgets()
+                    
+                    def _add_design(self):
+                        self.setFixedSize(300, 150)
+                        
+                        self.box_layout = QVBoxLayout() # Stack the items on top of each other.
+                        self.setLayout(self.box_layout)
+                        self.box_layout.setSpacing(0)
+                        self.box_layout.setContentsMargins(0, 0, 0, 0)
+                    
+                    def _get_font(self, bold: bool, size: int) -> QFont:
+                        font = self.fonts.caskaydia.bold
+                        font.setPointSize(size) # Set size to 10.
+                        font.setStyleHint(QFont.StyleHint.Monospace)
+                        font.setBold(bold)
+                        
+                        return font
+                    
+                    def _add_widgets(self):
+                        self.box_layout.addWidget(self.Label(
+                            font = self._get_font(True, 12),
+                            label_text = self.wallet["name"]
+                        )) # Wallet name label.
+                        
+                        self.box_layout.addWidget(self.Image(
+                            image_dir = self.wallet["icon_file_name"]
+                        )) # Wallet icon label.
+                        
+                        self.box_layout.addWidget(self.Address(
+                            font = self._get_font(False, 8),
+                            label_text = self.wallet["wallet_address"]
+                        )) # Wallet address label.
+                    
+                    class Image(QLabel):
+                        def __init__(self, image_dir: str):
+                            super().__init__()
+                            self.image_dir = image_dir
+                            
+                            self._add_design()
+                        
+                        def _add_design(self):
+                            self.setFixedSize(300, 100)
+                            self.setStyleSheet("background-color: transparent")
+                            
+                            crypto_icon_path = path("resources/window/assets/buttons/socials/crypto")
+                            icon_path = f"{crypto_icon_path}/{self.image_dir}"
+                            self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            
+                            self.setPixmap(QPixmap(icon_path).scaled(100, 100))
+                            
+                    class Label(QLabel):
+                        def __init__(
+                                self,
+                                font: QFont,
+                                label_text: str
+                        ):
+                            super().__init__()
+                            self.label_font = font
+                            self.label_text = label_text
+                        
+                            self._add_design()
+                        
+                        def _add_design(self):
+                            self.setFixedSize(300, 20)
+                            self.setText(self.label_text)
+                            self.setStyleSheet("background-color: transparent")
+                            
+                            self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            
+                            self.setFont(self.label_font)
+                    
+                    class Address(QTextEdit):
+                        def __init__(self, font: QFont, label_text: str):
+                            super().__init__()
+                            self.label_font = font
+                            self.label_text = label_text
+                        
+                            self._add_design()
+                        
+                        def _add_design(self):
+                            self.setFixedSize(300, 20)
+                            self.setText(self.label_text)
+                            self.setReadOnly(True)
+                            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                            self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+                            self.setStyleSheet("background-color: transparent; border: none;")
+                            
+                            self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                            
+                            self.setFont(self.label_font)
+                    
         class Label(QLabel):
             def __init__(
                     self,
@@ -135,6 +268,14 @@ class SocialsDisplay(QWidget):
                 
                 self._add_design()
             
+            def _get_font(self) -> QFont:
+                font = self.fonts.caskaydia.bold
+                font.setPointSize(12) # Set size to 10.
+                font.setStyleHint(QFont.StyleHint.Monospace)
+                font.setBold(True)
+            
+                return font
+            
             def _add_design(self):
                 self.setFixedSize(64, 20)
                 
@@ -145,11 +286,3 @@ class SocialsDisplay(QWidget):
                 self.setStyleSheet("background-color: transparent")
                 
                 self.setFont(self._get_font())
-            
-            def _get_font(self) -> QFont:
-                font = self.fonts.caskaydia.bold
-                font.setPointSize(12) # Set size to 10.
-                font.setStyleHint(QFont.StyleHint.Monospace)
-                font.setBold(True)
-            
-                return font
