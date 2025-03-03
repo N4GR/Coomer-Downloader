@@ -89,9 +89,8 @@ class Downloader:
         with requests.get(url, stream = True) as response: # Send GET request for file stream.
             if response.status_code == 200:
                 with open(file_full_dir, "wb") as file: # Open file in byte-write mode.
-                    with ThreadPoolExecutor(max_workers = 4) as executor: # Create a thread pool to download chunks.
-                        for chunk in response.iter_content(self.chunk_size):
-                            executor.submit(download_chunk, file, chunk) # Downloads each chunk in threads.
+                    for chunk in response.iter_content(self.chunk_size):
+                        file.write(chunk)
 
                 return (file, file_full_dir, 2, creator)
             

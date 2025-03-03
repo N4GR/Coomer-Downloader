@@ -166,3 +166,4 @@ cython_debug/
 data/links.txt
 
 design/
+output/
