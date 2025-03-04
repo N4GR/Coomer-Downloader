@@ -1,6 +1,8 @@
 from src.imports import QApplication
 from src.window.main_window import MainWindow
 
+from src.updater import Updater
+
 class Main:
     def __init__(
             self,
@@ -40,8 +42,17 @@ class Main:
         print("Running in window mode.")
         
         self.application = QApplication([]) # Create the application for PySide6.
+        
         self.main_window = MainWindow() # Create main window object.
         self.main_window.show() # Show the main window.
         
-        self.application.exec_() # Execute PySide6 event loop.
+        self.updater = Updater() # Check the updater for latest version.
         
+        if self.updater.current_version < self.updater.latest_version:
+            self.updater.show() # Show the updater if the version is out of date.
+        
+        else:
+            # Destroy widget.
+            self.updater = None
+        
+        self.application.exec_() # Execute PySide6 event loop.
