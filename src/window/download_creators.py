@@ -107,97 +107,56 @@ class DownloadCreators(QThread):
             self,
             creator: Creator
     ) -> None:
-        def on_post_complete(future: Future):
-            if self._should_stop: # Early exit.
-                return
-            
-            with self.lock:
-                self.completed_posts += 1
-            
-            post : Post = future.result()
-            
-            # When the post finishes downloading.
-            self.terminal_signal.emit(f"POST COMPLETE | {self.completed_posts}/{len(creator.posts)} -> {post.title.strip().replace("\n", "")}")
+        def on_file_complete(result: dict):
+            with self.lock: # Add numbers with lock, for thread-safe operation.
+                self.column += 1
+                
+                if self.column % self.max_column == 0: # If current column is a multiple of max_col, reset col to 0.
+                    self.row += 1
+                    self.column = 0
+        
+                file_dict = {
+                    "row": self.row,
+                    "column": self.column,
+                    "files_complete": self.completed_files,
+                    "file_count": self.file_count
+                }
+                
+                self.file_signal.emit(file_dict)
         
         if self._should_stop: # Early exit.
             return
         
-        # Create a thread for each post, executing a max workers to the thread.
-        with ThreadPoolExecutor(max_workers = 4) as executor: # Download posts simultaenously.
-            for post in creator.posts:
-                if self._should_stop: # Exit early.
-                    return
+        for post in creator.posts:
+            with ThreadPoolExecutor(max_workers = len(post.files)) as executor: # A thread for each file.
+                self.file_count = len(post.files)
                 
-                future = executor.submit(self.download_post, post, creator)
-                future.add_done_callback(on_post_complete)
-           
-    def download_post(
-            self,
-            post: Post,
-            creator: Creator
-    ) -> Post:
-        def download_file(file: File, post: Post, creator: Creator, should_stop: bool) -> tuple[File, str]:
-            if self._should_stop:
-                return
-            
-            self.terminal_signal.emit(f"DOWNLOADING FILE | {file.path}")
-            
-            completed_downloader = self.downloader.download_file(
-                self.output_dir,
-                file,
-                post,
-                creator,
-                should_stop
-            )
-            
-            return completed_downloader
-        
-        def on_file_complete(future: Future[tuple[File, str, int, Creator]]) -> None:
-            if self._should_stop:
-                return
-            
-            with self.lock: # Add onto the completed files counter.
-                self.completed_files += 1
-            
-            file, output_dir, code, creator = future.result() # File object and output directory string of downloaded file.
-            # Send the file complete signal to the avatar display.
-            file_dict = {
-                "files_complete": self.completed_files, # How many files are completed.
-                "file_count": creator.file_count,
-                "row": self.row, # Row of the creator the file downloaded at.
-                "column": self.column
-            }
-            
-            self.file_signal.emit(file_dict)
-            
-            # Check codes.
-            if code != 2: # If it's not a success code.
-                code_text = codes[code]
-                
-                self.terminal_signal.emit(f"DOWNLOAD FAILED | Code {code} {code_text} -> {output_dir}") # Print error.
-                return # Return function.
-                
-            self.terminal_signal.emit(f"DOWNLOADED FILE | {self.completed_files}/{creator.file_count} -> {output_dir}") # If all passes, print success to terminal.
-        
-        if self._should_stop: # Early exit.
-            return post
-        
-        self.files_to_complete = len(post.files)
-        
-        # Create a thread for each file in post, the max workers concurrently working set.
-        with ThreadPoolExecutor(max_workers = 10) as executor:
-            for file in post.files:
-                future = executor.submit(download_file, file, post, creator, self._should_stop) # Submit the download_file thread to be worked.
-                future.add_done_callback(on_file_complete) # Add onto completed_files when a file completes downloading.
+                for file in post.files:
+                    worker = DownloadFile()
+                    worker.file_progress_signal.connect()
+                    worker.file_complete_signal.connect(on_file_complete)
 
-                if self._should_stop:
-                    return
-
-        return post
-    
+            # When the post finishes downloading.
+            self.completed_posts += 1
+            self.terminal_signal.emit(f"POST COMPLETE | {self.completed_posts}/{len(creator.posts)} -> {post.title.strip().replace("\n", "")}")
+            
     def stop(self):
         """A function to safely close the QThread."""
         self.terminal_signal.emit("DOWNLOADING | STOP SIGNAL RECEIVED")
         
         with self.lock:
             self._should_stop = True
+
+class DownloadFile(QThread):
+    file_progress_signal = Signal(str)
+    file_complete_signal = Signal(dict)
+    
+    def __init__(
+            self,
+            file: File
+    ):
+        super().__init__()
+        self.file = file
+    
+    def run(self):
+        pass
