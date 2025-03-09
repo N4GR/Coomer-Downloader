@@ -236,7 +236,6 @@ class SideBar(QWidget):
             if check_inputted_links() is False: return
             
             self.main_window.terminal.add_text("Starting processes...")
-            self.main_window.disable_interactions() # Disable interactions before starting processes.
             
             links = [link.strip() for link in self.main_window.link_input.text_edit.toPlainText().split(",")] # Get a list of items given in link input.
             links_from_file = []
@@ -265,11 +264,10 @@ class SideBar(QWidget):
 
                 self.main_window.terminal.add_text("NO LINKS | No links found.")
                 
-                self.main_window.enable_interactions() # Re-enable all interactions.
                 return
             
             # Set start button to a stop button icon.
             self.set_to_stop()
             
             self._save_history(links) # Save links to history.json file.
-            self.main_window.start_links_download(links) # Start the creator threads to get creators.
+            self.main_window.start_downloader(list(set(links))) # Remove duplicate links.

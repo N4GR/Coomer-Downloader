@@ -49,3 +49,5 @@ class Terminal(QPlainTextEdit):
         formatted_time = now.strftime("%H:%M:%S") + f".{now.microsecond // 10000:02d}" # Microseconds to 2 decimal places.
         
         self.appendPlainText(f"{formatted_time} | {text}") # Add text to new line with formatted date.
+        
+        #self.ensureCursorVisible()

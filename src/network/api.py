@@ -65,12 +65,13 @@ class Profile:
         self.banner : str = endpoints.servers.coomer.banner.replace("{service}", self.service).replace("{creator_id}", self.id)
     
     def _get_profile_data(self) -> dict:
+        print(self.url)
+        
         service = self.url.split("/")[-3] # https://coomer.su/onlyfans/user/belledelphine -> onlyfans
         id = self.url.split("/")[-1] # https://coomer.su/onlyfans/user/belledelphine -> belledelphine
         
         url = endpoints.servers.coomer.api + endpoints.creator.profile.replace("{service}", service).replace("{creator_id}", id)
-        
-        print(url)
+
         # Send a GET request to obtain the profile data.
         with requests.get(url) as response:
             if response.status_code == 200:

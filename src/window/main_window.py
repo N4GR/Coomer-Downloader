@@ -1,7 +1,7 @@
 from src.imports import *
-
-# Local imports.
-from src.window.download_creators import DownloadCreators
+from src.window.extensions.q_downloader import (
+    QSignalEmitter, QDownloader
+)
 
 # Widgets.
 from src.window.widgets.init import *
@@ -19,11 +19,6 @@ class MainWindow(QWidget):
         
         # Initialise widgets after main window design.
         self._initialise_widgets()
-        
-        # For synchronising threads.
-        self.mutex = QMutex()
-        self.wait_condition = QWaitCondition()
-        self.active_download_workers = 0 # Keep track of download workers.
     
     def _create_req_dirs(self):
         """A function to create any required directories needed for the program to function (data, ect.)"""
@@ -66,64 +61,23 @@ class MainWindow(QWidget):
         self.avatar_display = AvatarDisplay(self)
         self.socials_display = SocialsDisplay(self)
     
-    def start_links_download(self, links: list[str]):
-        def on_terminal(result: str) -> None:
-            self.terminal.add_text(result)
+    def start_downloader(self, links: list[str]):
+        def on_avatar_found(profile: Profile):
+            self.terminal.add_text(f"Avatar Found: {profile.name}")
+            self.avatar_display.add_avatar(profile)
         
-        def on_complete(result: list[str]) -> None:
-            self.terminal.add_text("PROCESSING ENDED")
-            
-            self.enable_interactions()
+        self.post_thread_pool = QThreadPool(self, maxThreadCount = 3) # 3 posts concurrently.
+        self.file_thread_pool = QThreadPool(self, maxThreadCount = 12) # 12 files concurrently.
         
-        def on_finished() -> None:
-            "When the download worker is killed."
-            self.download_worker = None # Erase the download manager QThread.
-            
-            self.avatar_display.reset_display() # Reset the avatar display.
-            
-            # Re-enable start button.
-            self.side_bar.start_button.setEnabled(True)
-            self.side_bar.start_button.set_to_start() # Reset the icon.
-        
-        def on_avatar(result: Profile) -> None:
-            self.avatar_display.add_avatar(result) # Add creator to display.
-        
-        def on_file_complete(result: dict) -> None:
-            self.avatar_display.set_avatar_file_count(result)
-        
-        # Start downloading a creator in a different thread.
-        self.download_worker = DownloadCreators(
-            links = links,
-            output_dir = self.output_directory.text_edit.text()
+        self.signal_emitter = QSignalEmitter(self)
+        self.downloader = QDownloader(
+            self.signal_emitter,
+            self.terminal,
+            self.post_thread_pool,
+            self.file_thread_pool,
+            self.output_directory.text_edit.text(),
+            links,
         )
         
-        self.download_worker.terminal_signal.connect(on_terminal)
-        self.download_worker.complete_signal.connect(on_complete)
-        self.download_worker.avatar_signal.connect(on_avatar)
-        self.download_worker.file_signal.connect(on_file_complete)
-        
-        self.download_worker.finished.connect(on_finished)
-        
-        self.download_worker.start()
-    
-    def enable_interactions(self):
-        """A function that will set all interactions to enabled."""
-        self.link_input.text_edit.setEnabled(True)
-        self.terminal.add_text("ENABLE | Link inputs.")
-        
-        self.file_input.button.setEnabled(True)
-        self.terminal.add_text("ENABLE | File inputs.")
-        
-        self.output_directory.button.setEnabled(True)
-        self.terminal.add_text("ENABLE | Output directory inputs.")
-    
-    def disable_interactions(self):
-        """A function to halt all interactions with configurations while the start process is being handled."""
-        self.link_input.text_edit.setDisabled(True)
-        self.terminal.add_text("DISABLE | Link inputs.")
-        
-        self.file_input.button.setDisabled(True)
-        self.terminal.add_text("DISABLE | File inputs.")
-        
-        self.output_directory.button.setDisabled(True)
-        self.terminal.add_text("DISABLE | Output directory inputs.")
+        self.downloader.avatar_found_signal.connect(on_avatar_found)
+        self.downloader.start()
